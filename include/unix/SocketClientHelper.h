@@ -16,6 +16,11 @@ protected: UNIXSocketClientHelper();
 
 public: static int startConnectToServer(const UNIXSockConnParams * params);
 
+public: static int startReceiveFromServer(int sockfd,
+	UNIXOnSocket * onSocket,
+	uint32_t serverIP,
+	uint16_t serverPort);
+
 };
 
 #endif /* UNIXSOCKETCLIENTHELPER_H__ */
