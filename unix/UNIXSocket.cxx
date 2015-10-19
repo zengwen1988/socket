@@ -94,6 +94,9 @@ void * UNIXSocket::connectByDomain (UNIXSockConnParamsDomain * domain)
 
 	int code;
 	int ret;
+#if defined(__APPLE__)
+	int set;
+#	endif
 	struct hostent * hptr;
 	char ipstr[32];
 	uint32_t ipn;
