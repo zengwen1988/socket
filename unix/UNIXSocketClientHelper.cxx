@@ -71,9 +71,8 @@ conn_fail:
 }
 
 
-int UNIXSocketClientHelper::startConnectByDomain (const char * domain,
-	uint16_t port/* host order*/,
-	const UNIXSockStartConnParams * ps)
+int UNIXSocketClientHelper::startConnectByDomain (
+	const UNIXSockStartConnParamsD * ps)
 {
-	return UNIXSocket::startConnectByDomain(domain, port, ps);
+	return UNIXSocket::startConnectByDomain(ps);
 }

@@ -13,7 +13,8 @@
  *   2015-10-19 1 292 02:04:45 -0400 by yuiwong
  *
  * V
- *   - 1.0.0.0 - TODO
+ *   - 1.0.0.0 - 20151019
+ *   first version
  *
  * LICENSE
  *   LGPLv3
@@ -151,14 +152,25 @@ sock_fail:
 }
 
 
+/*
+ * NAME
+ *   get_sockfd_by_ipstr - get sockfd by ip string
+ *
+ * PARAMS
+ *   - ip: ip string in host order
+ *   - port: port in host order
+ */
 int get_sockfd_by_ipstr (const char * ip, uint16_t port)
 {
+
 	if (NULL == ip) {
 		return -EINVAL;
 	}
 
+	/* XXX: note inet_addr -> host order string to net order num */
 	return get_sockfd_by_ipn(inet_addr(ip), htons(port));
-}
+
+} /* get_sockfd_by_ipstr */
 
 
 /*
@@ -241,6 +253,10 @@ end:
 } /* recv_from_sockfd */
 
 
+/*
+ * NAME
+ *   receive_routine - intenal receive rountine
+ */
 static void * receive_routine (struct _sock_recv_t * params)
 {
 

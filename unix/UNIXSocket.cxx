@@ -253,9 +253,7 @@ fail:
 }
 
 
-int UNIXSocket::startConnectByDomain (const char * domain,
-	uint16_t port/* host order*/,
-	const UNIXSockStartConnParams * ps)
+int UNIXSocket::startConnectByDomain (const UNIXSockStartConnParamsD * ps)
 {
 	int ret;
 	pthread_t tid;
@@ -266,7 +264,9 @@ int UNIXSocket::startConnectByDomain (const char * domain,
 #endif
 
 	/* check */
-	if ((NULL == domain) || (NULL == ps)) {
+	if ((NULL == ps)
+		|| (NULL == ps->getOnSocket())
+		|| (strlen(ps->getDomain()) <= 0)) {
 		log2stream(stderr, "invalid domain or params");
 		return -EINVAL;
 	}
@@ -281,7 +281,7 @@ int UNIXSocket::startConnectByDomain (const char * domain,
 	domainps->port = ps->getPort();
 	domainps->timeout = ps->getTimeout();
 	bzero(domainps->domain, 1024);
-	strncpy(domainps->domain, domain, 1024);
+	strncpy(domainps->domain, ps->getDomain(), 1024);
 	domainps->domain[1023] = '\0';
 
 	ret = pthread_create(&tid, NULL,
@@ -375,7 +375,7 @@ void * UNIXSocket::receiveRoutine (UNIXSockReceiveParams * params)
 		} else if (ret > 0) {
 			/* success */
 			// redparams.count = ret;
-			onSocket->onReceived(buf, ret);
+			onSocket->onReceived(sockfd, buf, ret);
 		} else {
 			/* < -1000 timeout */
 		}

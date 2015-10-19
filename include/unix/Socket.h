@@ -13,9 +13,7 @@ public: static int startConnectByIP(uint32_t ip, uint16_t port);
 public: static int startConnBySockfd(int sockfd,
 	const UNIXSockStartConnParams * ps);
 
-public: static int startConnectByDomain(const char * domain,
-	uint16_t port/* host order*/,
-	const UNIXSockStartConnParams * ps);
+public: static int startConnectByDomain(const UNIXSockStartConnParamsD * ps);
 
 protected: static void * connectByDomain(UNIXSockConnParamsDomain * domain);
 

@@ -26,5 +26,4 @@ SOURCES += ../../../unix/UNIXSocketClientHelper.cxx
 
 
 # target
-SOURCES += ../../../../test/main.cxx
-
+SOURCES += ../../../test/main.cxx

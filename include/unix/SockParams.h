@@ -3,15 +3,13 @@
 
 #include <stdint.h> /* int32_t .. */
 #include <pthread.h> /* pthread_t */
+#include <string.h>
 
 
 class UNIXOnSocket;
 
 /*
- * NAME UNIXSockConnParams - class for start connect to server
- *
- * PARAMS:
- *   - TODO
+ * NAME UNIXSockStartConnParams - class for start connect to server
  */
 class UNIXSockStartConnParams {
 
@@ -38,6 +36,42 @@ private: uint16_t timeout;/* second */
  *   - Must manual set onSocket before call start connect or will fail
  */
 private: UNIXOnSocket * onSocket;
+
+};
+
+
+/*
+ * NAME UNIXSockStartConnParamsD - class for start connect to server (domain)
+ */
+class UNIXSockStartConnParamsD {
+
+public: UNIXSockStartConnParamsD(const char * domain,
+	uint16_t port,
+	uint16_t timeout,
+	UNIXOnSocket * onSocket)
+{
+
+	bzero(this->domain, 1024);
+	if (NULL != domain) {
+		strncpy(this->domain, domain, 1024);
+		this->domain[1023] = '\0';
+	}
+
+	this->port = port;
+	this->timeout = timeout;
+	this->onSocket = onSocket;
+
+}
+
+public: uint16_t getPort() const { return this->port; }
+public: uint16_t getTimeout() const { return this->timeout; }
+public: UNIXOnSocket * getOnSocket() const { return this->onSocket; }
+public: const char * getDomain() const { return this->domain; }
+
+private: uint16_t port;/* host order */
+private: uint16_t timeout;/* second */
+private: UNIXOnSocket * onSocket;
+private: char domain[1024];
 
 };
 

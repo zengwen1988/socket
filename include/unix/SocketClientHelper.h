@@ -17,9 +17,7 @@ protected: UNIXSocketClientHelper();
 public: static int startConnectToServer(
 	const UNIXSockStartConnParams * params);
 
-public: static int startConnectByDomain(const char * domain,
-	uint16_t port/* host order*/,
-	const UNIXSockStartConnParams * ps);
+public: static int startConnectByDomain(const UNIXSockStartConnParamsD * ps);
 /*
 public: static int startReceiveFromServer(int sockfd,
 	UNIXOnSocket * onSocket,
