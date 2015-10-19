@@ -46,7 +46,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
-#include <c_log.h> /* log2stream */
+#include <c_log.h> /* debug log */
 
 
 /*
@@ -69,13 +69,28 @@ int get_sockfd_by_ip (uint32_t ip, uint16_t port)
 }
 
 
-int get_sockfd_by_ipn (uint32_t ipn/* net order */, uint16_t portn)
+/*
+ * NAME get_sockfd_by_ipn - get sockfd by ip and port
+ *
+ * PARAMS
+ *   - ip: net order
+ *   - port: net order
+ *
+ * RETURN
+ *   - sockfd(>= 0) when success
+ *   - -errno < 0 when fail
+ */
+int get_sockfd_by_ipn (uint32_t ipn/* net order */,
+	uint16_t portn /* net order */)
 {
 
 	int ret;
 	struct sockaddr_in sa;
 	int sockfd;
 
+#if	defined(UNIX_SOCK_DEBUG)
+	show_trace();
+#	endif
 	/* gethostbyname */
 
 	sa.sin_addr.s_addr = ipn;
@@ -116,8 +131,7 @@ int get_sockfd_by_ipn (uint32_t ipn/* net order */, uint16_t portn)
 		goto conn_fail;
 	}
 
-	log2stream(stdout, "start to connect: %08x:%u success: %d", ipn, portn,
-		sockfd);
+	log2stdout("start to connect: %08x:%u success: %d", ipn, portn, sockfd);
 
 	/* success */
 	return sockfd;
@@ -128,8 +142,11 @@ conn_fail:
 	sockfd = -1;
 
 sock_fail:
+	if (ret > 0) {
+		ret = -1 * ret;
+	}
 
-	return (int32_t)-ret;
+	return ret;
 
 }
 
@@ -144,6 +161,15 @@ int get_sockfd_by_ipstr (const char * ip, uint16_t port)
 }
 
 
+/*
+ * NAME recv_from_sockfd - receive
+ *
+ * RETURN
+ *   - > 0 received data
+ *   - < 0 && > -1000 fail
+ *   - <= -1000 timeout
+ *   - 0 peer disconnected
+ */
 ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 	size_t max, uint32_t wr_us, uint32_t r_us)
 {
@@ -153,10 +179,9 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 	int nfds, ret;
 
 #if defined(UNIX_SOCK_DEBUG)
-	fprintf(stdout,
-		"+%d: fd: %d buf: %p start: %d max: %zu\n", __LINE__, sockfd,
+	log2stdout("fd: %d: buf: %p start: %d max: %zu", sockfd,
 		buf, start, max);
-	printf("wr_us: %u r_us: %u\n", wr_us, r_us);
+	log2stdout("wr_us: %u r_us: %u", wr_us, r_us);
 #	endif
 
 	/* set select timeout */
@@ -211,10 +236,9 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 	}
 
 end:
-
 	return (ssize_t)ret;/* success or fail */
 
-}
+} /* recv_from_sockfd */
 
 
 static void * receive_routine (struct _sock_recv_t * params)

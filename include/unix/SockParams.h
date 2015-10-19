@@ -67,6 +67,30 @@ protected: UNIXOnSocket * onSocket;
 };
 
 
+class UNIXSockConnParamsDomain {
+
+friend class UNIXSocket;
+
+protected: UNIXSockConnParamsDomain();
+
+public: const char * getDomain() const;
+public: uint16_t getPort() const;
+public: uint16_t getTimeout() const;
+public: UNIXOnSocket * getOnSocket() const;
+public: pthread_t getTid() const;
+
+protected: int sockfd;
+protected: pthread_t tid;
+
+protected: uint16_t port;/* host order */
+protected: uint16_t timeout;/* second */
+
+protected: UNIXOnSocket * onSocket;
+protected: char domain[1024];
+
+};
+
+
 class UNIXSockReceiveParams {
 
 friend class UNIXSocket;

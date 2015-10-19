@@ -68,3 +68,27 @@ pthread_t UNIXSockConnParams::getTid () const {
 uint16_t UNIXSockConnParams::getTimeout () const {
 	return this->timeout;
 }
+
+
+
+
+UNIXSockConnParamsDomain::UNIXSockConnParamsDomain () {}
+
+uint16_t UNIXSockConnParamsDomain::getPort () const {
+	return this->port;
+}
+
+
+UNIXOnSocket * UNIXSockConnParamsDomain::getOnSocket () const {
+	return  this->onSocket;
+}
+
+
+pthread_t UNIXSockConnParamsDomain::getTid () const {
+	return this->tid;
+}
+
+
+uint16_t UNIXSockConnParamsDomain::getTimeout () const {
+	return this->timeout;
+}

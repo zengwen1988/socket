@@ -14,12 +14,18 @@ class UNIXSocketClientHelper {
 
 protected: UNIXSocketClientHelper();
 
-public: static int startConnectToServer(const UNIXSockStartConnParams * params);
+public: static int startConnectToServer(
+	const UNIXSockStartConnParams * params);
 
+public: static int startConnectByDomain(const char * domain,
+	uint16_t port/* host order*/,
+	const UNIXSockStartConnParams * ps);
+/*
 public: static int startReceiveFromServer(int sockfd,
 	UNIXOnSocket * onSocket,
 	uint32_t serverIP,
 	uint16_t serverPort);
+*/
 
 };
 

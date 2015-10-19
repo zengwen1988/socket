@@ -37,7 +37,7 @@ int UNIXSocketClientHelper::startConnectToServer (
 	ip = params->getIP();
 	port = params->getPort();
 
-	sockfd = UNIXSocket::startConnectByProtocol(ip, port);
+	sockfd = UNIXSocket::startConnectByIP(ip, port);
 
 	if (sockfd < 0) {
 		ret = -sockfd;
@@ -68,4 +68,12 @@ conn_fail:
 
 	return -ret;
 
+}
+
+
+int UNIXSocketClientHelper::startConnectByDomain (const char * domain,
+	uint16_t port/* host order*/,
+	const UNIXSockStartConnParams * ps)
+{
+	return UNIXSocket::startConnectByDomain(domain, port, ps);
 }

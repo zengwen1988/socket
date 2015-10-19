@@ -1,19 +1,23 @@
 #if !defined (UNIXSOCKET_H__)
 #define UNIXSOCKET_H__ (1)
 
-#include <arpa/inet.h>
 #include <unix/sock.h>
 #include <unix/SockParams.h>
 
+
+
 class UNIXSocket {
 
-public: static int startConnectByProtocol (uint32_t ip, uint16_t port)
-{
-	return get_sockfd_by_ipn(htonl(ip), htons(port));
-}
+public: static int startConnectByIP(uint32_t ip, uint16_t port);
 
 public: static int startConnBySockfd(int sockfd,
 	const UNIXSockStartConnParams * ps);
+
+public: static int startConnectByDomain(const char * domain,
+	uint16_t port/* host order*/,
+	const UNIXSockStartConnParams * ps);
+
+protected: static void * connectByDomain(UNIXSockConnParamsDomain * domain);
 
 protected: static void * connectBySockfd(UNIXSockConnParams * params);
 
