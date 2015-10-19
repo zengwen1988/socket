@@ -14,7 +14,7 @@ class UNIXSocketClientHelper {
 
 protected: UNIXSocketClientHelper();
 
-public: static int startConnectToServer(const UNIXSockConnParams * params);
+public: static int startConnectToServer(const UNIXSockStartConnParams * params);
 
 public: static int startReceiveFromServer(int sockfd,
 	UNIXOnSocket * onSocket,

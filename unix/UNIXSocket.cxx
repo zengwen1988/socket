@@ -1,9 +1,10 @@
-#include <unix/OnSocket.h>
 #include <unix/Socket.h>
-#include <unix/SocketClientHelper.h>
-#include <unix/SocketClientUtil.h>
+#include <unix/OnSocket.h>
 
-#include <unistd.h> /* usleep */
+#include <c_log.h>
+
+#include <unistd.h>
+#include <pthread.h>
 #include <fcntl.h> /* F_GETFL .. */
 #include <sys/socket.h> /* SOL_SOCKET .. */
 #include <arpa/inet.h>
@@ -13,74 +14,111 @@
 #include <sys/stat.h>
 
 
-#include <c_log.h> /* log2stream */
-
-
-int UNIXSocket::startConnectByProtocol (uint32_t ip, uint16_t port) {
+void * UNIXSocket::receiveRoutine (UNIXSockReceiveParams * params)
+{
 
 	int ret;
-	struct sockaddr_in sa;
-	int sockfd = -1;
+	int sockfd;
+	/* pthread_t tid; */
+	/* uint32_t ip;
+	uint16_t port;
+	*/
+	bool teminate;
+	UNIXOnSocket * onSocket;
+	uint8_t * buf;
+	sock_will_finish_t fiparams;
 
-	/* gethostbyname */
+	/* dump */
+	sockfd = params->getSockfd();
+	onSocket = params->getOnSocket();
+	/* ip = params->getPeerIP();
+	port = params->getPeerPort();
+	*/
+	/* tid = params->tid; */
 
-	sa.sin_addr.s_addr = htonl(ip);
+	usleep(5 * 1e3); /* 5 mesc */
+	delete params;
+	params = NULL;
 
-#	if defined(UNIX_SOCK_DEBUG)
-	log2stream(stdout, "addr: 0x%x", sa.sin_addr.s_addr);
-#	endif
+	fiparams.sockfd = sockfd;
 
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(port);
+	teminate = onSocket->shouldTeminateRecv(sockfd);
+	buf = new uint8_t[4096];
+	// redparams.data = buf;
+	// redparams.sockfd = sockfd;
 
-	/* SOCK_STREAM -- here is TCP */
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd < 0) {
-		ret = errno;
+	while (0 == teminate)
+	{
+		bzero(buf, 4096);
 
-		log2stream(stderr, "socket fail");
+		ret = recv_from_sockfd(sockfd, buf, 0, 4096, 15 * 1e6, 15 * 1e6);
 
-		goto sock_fail;
+		if ((ret < 0) && (ret > -1000)) {
+			log2stream(stdout, "will exit: %d", ret);
+			fiparams.code = ret;/* fail */
+			onSocket->willFinish(fiparams);
+			return NULL;
+		} else if (0 == ret) {
+			/* disconnected */
+			log2stream(stdout, "will exit");
+			fiparams.code = 0;
+			onSocket->willFinish(fiparams);
+			return NULL;
+		} else if (ret > 0) {
+			/* success */
+			// redparams.count = ret;
+			onSocket->onReceived(buf, ret);
+		} else {
+			/* < -1000 timeout */
+		}
+
+		teminate = onSocket->shouldTeminateRecv(sockfd);
 	}
 
-#	if defined(UNIX_SOCK_DEBUG)
-	log2stream(stdout, "before connect");
-#	endif
+	fiparams.code = 1;/* user terminate */
+	onSocket->willFinish(fiparams);
 
-	UNIXSocketClientUtil::setSocketBlock(sockfd, false);
+	return (void *)0;/* success */
 
-	/* connect */
-	ret = connect(sockfd, (const struct sockaddr *)&sa, sizeof(sa));
+}
 
-	if ((ret < 0) && (EINPROGRESS != errno)) {
-		ret = errno;
 
-		log2stream(stderr, "connect fail");
+int UNIXSocket::startReceiveFromPeer (UNIXSockReceiveParams * params)
+{
 
-		goto conn_fail;
+	int ret;
+	pthread_t tid;
+
+#if defined(UNIX_SOCK_DEBUG)
+	log2stream(stdout, "start");
+#endif
+
+	/* let thread to do recv */
+	ret = pthread_create(&tid, NULL,
+		(void *(*)(void *))UNIXSocket::receiveRoutine, params);
+
+	if (0 != ret) {
+		errno = ret;
+
+		error2stream(stderr, "start receive fail");
+
+		return -ret;
+	} else {
+		/* success */
+		params->tid = tid;
+		log2stream(stdout, "start receive success: tid: %lu", tid);
+		return 0;
 	}
-
-	log2stream(stdout, "start to connect: %d success", sockfd);
-
-	/* success */
-	return sockfd;
-
-conn_fail:
-	UNIXSocketClientUtil::setSocketBlock(sockfd, true);
-	close(sockfd);
-	sockfd = -1;
-
-sock_fail:
-
-	return (int32_t)-ret;
 
 }
 
 
 /*
- * NAME: __connect_s2 - oneshot
+ * NAME: connect by socket fd  - oneshot
  */
-static void * __connect_s2 (ConnectRoutineParams * params) {
+// static void * connectBySockfd (UNIXSockConnParams * params)
+void * UNIXSocket::connectBySockfd (UNIXSockConnParams * params)
+{
 
 	int ret;
 	int sockfd;
@@ -88,23 +126,32 @@ static void * __connect_s2 (ConnectRoutineParams * params) {
 #if defined(__APPLE__)
 	int set;
 #	endif
+	int code;
 	uint32_t ip;
 	uint16_t port;
-	int code;
 	fd_set fdwrite;
 	pthread_t tid;
 	struct timeval tv_select;
 	UNIXOnSocket * onSocket;
-	unix_sock_on_conn_params_t onConnParams;
+	UNIXSockReceiveParams * rcvparams = NULL;
+	sock_on_conn_t cparams;
 
+
+	if (NULL == params) {
+		log2stream(stderr, "null params");
+		return (void *)-EINVAL;
+	}
+
+	/* dump */
+	ip = params->getIP();
+	onSocket = params->getOnSocket();
+	port = params->getPort();
 	sockfd = params->getSockfd();
 	timeout = params->getTimeout();
-	onSocket = params->getOnSocket();
-	ip = params->getServerIP();
-	port = params->getServerPort();
-	tid = params->getTid();
 
 	usleep(5 * 1e3); /* 5 mesc */
+	tid = params->getTid();
+
 	delete params;
 	params = NULL;
 
@@ -151,7 +198,6 @@ static void * __connect_s2 (ConnectRoutineParams * params) {
 #	endif
 
 	/* final ok */
-	UNIXSocketClientUtil::setSocketBlock(sockfd, true);
 
 #if defined(__APPLE__)
 	set = 1;
@@ -159,25 +205,27 @@ static void * __connect_s2 (ConnectRoutineParams * params) {
 		sizeof(int));
 #	endif
 
-
-
-	onConnParams.sockfd = sockfd;
-	onConnParams.pairIP = ip;
-	onConnParams.pairPort = port;
+	rcvparams = new UNIXSockReceiveParams();
+	rcvparams->onSocket = onSocket;
+	rcvparams->peerIP = ip;
+	rcvparams->peerPort = port;
+	rcvparams->sockfd = sockfd;
 
 	/* start on received thread */
-	ret = UNIXSocketClientHelper::startReceiveFromServer(sockfd, onSocket,
-		ip, port);
+	ret = UNIXSocket::startReceiveFromPeer(rcvparams);
 	if (0 != ret) {
-		error2stream(stderr, "startReceiveFromServer fail");
-		code = ret > 0 ? ret : -ret;
+		error2stream(stderr, "start_receive_from_peer fail");
+		code = 1;
+		delete rcvparams;
+		rcvparams = NULL;
 	} else {
 		code = 0;
 	}
+	rcvparams = NULL;
 
-
-	onConnParams.code = code;
-	onSocket->onConnect(onConnParams);
+	cparams.code = code;
+	cparams.sockfd = sockfd;
+	onSocket->onConnect(cparams);
 
 	log2stream(stdout, "tid: %lu end success: %d", tid, ret);
 
@@ -186,12 +234,14 @@ static void * __connect_s2 (ConnectRoutineParams * params) {
 select_to:
 select_fail:
 
-	UNIXSocketClientUtil::setSocketBlock(sockfd, true);
-	close(sockfd);
-	sockfd = -1;
+	cparams.code = -1;
+	cparams.sockfd = -1;
+	onSocket->onConnect(cparams);
 
-	onConnParams.code = -1;
-	onSocket->onConnect(onConnParams);
+	if (NULL != rcvparams) {
+		delete rcvparams;
+		rcvparams = NULL;
+	}
 
 	log2stream(stdout, "tid: %lu end fail", tid);
 
@@ -200,38 +250,54 @@ select_fail:
 }
 
 
-connect_routine_t * UNIXSocket::getS2ConnectRoutine () {
-	return  __connect_s2;
-}
-
-
-static void * __receive_routine (RecveiveParams * params) {
-
+int UNIXSocket::startConnBySockfd (int sockfd,
+	const UNIXSockStartConnParams * ps)
+{
 	int ret;
-	int sockfd;
-	uint32_t ip;
-	uint16_t port;
-	UNIXOnSocket * onSocket;
 	pthread_t tid;
-	uint8_t * data;
 
+#if	defined(UNIX_SOCK_DEBUG)
+	log2stream(stdout, "start");
+#endif
 
-	/* dump */
-	sockfd = params->getSockfd();
-	ip = params->getServerIP();
-	port = params->getServerPort();
-	onSocket = params->getOnSocket();
-	tid = params->getTid();
+	/* check */
+	if ((sockfd < 0) || (NULL == ps)) {
+		log2stream(stderr, "invalid sockfd or conn params");
+		return -EINVAL;
+	}
 
-	usleep(5 * 1e3); /* 5 mesc */
-	delete params;
-	params = NULL;
+	if (NULL == ps->getOnSocket()) {
+		log2stream(stderr, "invalid callback");
+		return -EINVAL;
+	}
 
-	return (void *)0;/* success */
+	UNIXSockConnParams * dps = new UNIXSockConnParams();
+	dps->sockfd = sockfd;
+	dps->ip = ps->getIP();
+	dps->onSocket = ps->getOnSocket();
+	dps->port = ps->getPort();
+	dps->timeout = ps->getTimeout();
 
-}
+	ret = pthread_create(&tid, NULL,
+		(void *(*)(void *))UNIXSocket::connectBySockfd, dps);
 
+	if (0 != ret) {
+		errno = ret;
+		error2stream(stderr, "start connect 2 fail");
 
-receive_routine_t * UNIXSocket::getReceiveRoutine() {
-	return __receive_routine;
+		delete dps;
+		dps = NULL;
+		goto sconnfail;
+	} else {
+		/*  success */
+		dps->tid = tid;
+#if 	defined(UNIX_SOCK_DEBUG)
+		log2stream(stdout, "start connect success: tid: %lu", tid);
+#		endif
+		return 0;
+	}
+
+sconnfail:
+	log2stream(stdout, "tid: %lu end fail", tid);
+	return -ret;/* fail */
 }

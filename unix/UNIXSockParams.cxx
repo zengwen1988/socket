@@ -4,7 +4,7 @@
 
 
 
-UNIXSockConnParams::UNIXSockConnParams (uint32_t ip,
+UNIXSockStartConnParams::UNIXSockStartConnParams (uint32_t ip,
 	uint16_t port,
 	uint16_t timeout,
 	UNIXOnSocket * onSocket) {
@@ -17,6 +17,29 @@ UNIXSockConnParams::UNIXSockConnParams (uint32_t ip,
 }
 
 
+uint32_t UNIXSockStartConnParams::getIP () const {
+	return this->ip;
+}
+
+
+uint16_t UNIXSockStartConnParams::getPort () const {
+	return this->port;
+}
+
+
+uint16_t UNIXSockStartConnParams::getTimeout () const {
+	return this->timeout;
+}
+
+
+UNIXOnSocket * UNIXSockStartConnParams::getOnSocket () const {
+	return  this->onSocket;
+}
+
+
+UNIXSockConnParams::UNIXSockConnParams () {}
+
+
 uint32_t UNIXSockConnParams::getIP () const {
 	return this->ip;
 }
@@ -27,11 +50,21 @@ uint16_t UNIXSockConnParams::getPort () const {
 }
 
 
-uint16_t UNIXSockConnParams::getTimeout () const {
-	return this->timeout;
+UNIXOnSocket * UNIXSockConnParams::getOnSocket () const {
+	return  this->onSocket;
 }
 
 
-UNIXOnSocket * UNIXSockConnParams::getOnSocket () const {
-	return  this->onSocket;
+int UNIXSockConnParams::getSockfd () const {
+	return this->sockfd;
+}
+
+
+pthread_t UNIXSockConnParams::getTid () const {
+	return this->tid;
+}
+
+
+uint16_t UNIXSockConnParams::getTimeout () const {
+	return this->timeout;
 }

@@ -1,23 +1,23 @@
 #if !defined (UNIXONSOCKET_H__)
 #define UNIXONSOCKET_H__ (1)
 
-
+#include <unix/sock.h>
 #include <unix/SockParams.h>
 
 
 class UNIXOnSocket {
 
 /* override this */
-public: virtual int onConnect(unix_sock_on_conn_params_t);
+public: virtual int onConnect(sock_on_conn_t);
 
 /* override this */
-public: virtual int onDisconnected(unix_sock_on_conn_params_t);
+public: virtual int willFinish(sock_will_finish_t);
 
 /* override this */
-public: virtual int onReceived(const uint8_t * data, size_t sz);
+public: virtual int onReceived(const uint8_t *, size_t);
 
 /* override this */
-public: virtual int onSent(const uint8_t * data, size_t sz);
+public: virtual bool shouldTeminateRecv(int sockfd);
 
 };
 
