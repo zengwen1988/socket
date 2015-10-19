@@ -63,7 +63,13 @@
  *   - success: sockfd >= 0
  *   - fail: -errno
  */
-int get_sockfd_by_protocol (uint32_t ip, uint16_t port)
+int get_sockfd_by_ip (uint32_t ip, uint16_t port)
+{
+	return get_sockfd_by_ipn(htonl(ip), htons(port));
+}
+
+
+int get_sockfd_by_ipn (uint32_t ipn/* net order */, uint16_t portn)
 {
 
 	int ret;
@@ -72,16 +78,15 @@ int get_sockfd_by_protocol (uint32_t ip, uint16_t port)
 
 	/* gethostbyname */
 
-
-	sa.sin_addr.s_addr = htonl(ip);
+	sa.sin_addr.s_addr = ipn;
 
 
 #	if defined(UNIX_SOCK_DEBUG)
-	log2stream(stdout, "ip: 0x%x addr: 0x%x", ip, sa.sin_addr.s_addr);
+	log2stream(stdout, "ip: 0x%x addr: 0x%x", ipn, sa.sin_addr.s_addr);
 #	endif
 
 	sa.sin_family = AF_INET;
-	sa.sin_port = htons(port);
+	sa.sin_port = portn;
 
 	/* SOCK_STREAM -- here is TCP FIXME use all params */
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -111,7 +116,7 @@ int get_sockfd_by_protocol (uint32_t ip, uint16_t port)
 		goto conn_fail;
 	}
 
-	log2stream(stdout, "start to connect: %08x:%u success: %d", ip, port,
+	log2stream(stdout, "start to connect: %08x:%u success: %d", ipn, portn,
 		sockfd);
 
 	/* success */
@@ -126,6 +131,16 @@ sock_fail:
 
 	return (int32_t)-ret;
 
+}
+
+
+int get_sockfd_by_ipstr (const char * ip, uint16_t port)
+{
+	if (NULL == ip) {
+		return -EINVAL;
+	}
+
+	return get_sockfd_by_ipn(inet_addr(ip), htons(port));
 }
 
 

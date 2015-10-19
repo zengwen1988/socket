@@ -94,7 +94,11 @@ struct _sock_recv_t {
 extern int set_sock_block(int sockfd, uint8_t block);
 
 /* socket operation */
-extern int get_sockfd_by_protocol(uint32_t ip, uint16_t port);
+extern int get_sockfd_by_ip(uint32_t ip/* host prder*/,
+	uint16_t port/*host order*/);
+extern int get_sockfd_by_ipn(uint32_t ipn/* net order */,
+	uint16_t portn/* net order */);
+extern int get_sockfd_by_ipstr(const char * ip/* host order */, uint16_t port);
 extern int start_conn_by_sock_fd(int sockfd,
 	const sock_start_conn_t * ps);
 extern ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
