@@ -352,7 +352,8 @@ static int start_receive_from_peer (struct _sock_recv_t * params)
 	} else {
 		/* success */
 		params->tid = tid;
-		log2stream(stdout, "start receive success: tid: %lu", tid);
+		log2stream(stdout, "start receive success: tid: %lu",
+			(unsigned long)tid);
 		return 0;
 	}
 
@@ -403,7 +404,7 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	free(params);
 	params = NULL;
 
-	log2stream(stdout, "tid: %lu begin", tid);
+	log2stream(stdout, "tid: %lu begin", (unsigned long)tid);
 
 	/* wait(select) writeable */
 	FD_ZERO(&fdwrite);
@@ -480,7 +481,7 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	oncparams.sockfd = sockfd;
 	on_connect(oncparams);
 
-	log2stream(stdout, "tid: %lu end success: %d", tid, ret);
+	log2stream(stdout, "tid: %lu end success: %d", (unsigned long)tid, ret);
 
 	return (void *)0;/* success */
 
@@ -495,7 +496,7 @@ select_fail:
 		free(rcvparams);
 		rcvparams = NULL;
 	}
-	log2stream(stdout, "tid: %lu end fail", tid);
+	log2stream(stdout, "tid: %lu end fail", (unsigned long)tid);
 
 	return (void *)-1;/* fail */
 
@@ -553,13 +554,13 @@ int start_conn_by_sock_fd (int sockfd, const sock_start_conn_t * ps)
 		/*  success */
 		dd->tid = tid;
 #if 	defined(UNIX_SOCK_DEBUG)
-		log2stream(stdout, "start connect success: tid: %lu", tid);
+		log2stdout("start connect success: tid: %lu", (unsigned long)tid);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	log2stream(stdout, "tid: %lu end fail", tid);
+	log2stdout("tid: %lu end fail", (unsigned long)tid);
 	return -ret;/* fail */
 
 }

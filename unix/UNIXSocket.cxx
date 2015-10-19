@@ -77,13 +77,13 @@ int UNIXSocket::startConnBySockfd (int sockfd,
 		/*  success */
 		dps->tid = tid;
 #if 	defined(UNIX_SOCK_DEBUG)
-		log2stream(stdout, "start connect success: tid: %lu", tid);
+		log2stdout("start connect success: tid: %lu", (unsigned long)tid);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	log2stream(stdout, "tid: %lu end fail", tid);
+	log2stdout("tid: %lu end fail", (unsigned long)tid);
 	return -ret;/* fail */
 
 }
@@ -301,13 +301,13 @@ int UNIXSocket::startConnectByDomain (const UNIXSockStartConnParamsD * ps)
 		/*  success */
 		domainps->tid = tid;
 #if 	defined(UNIX_SOCK_DEBUG)
-		log2stream(stdout, "start connect success: tid: %lu", tid);
+		log2stdout("start connect success: tid: %lu", (unsigned long)tid);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	log2stream(stdout, "tid: %lu end fail", tid);
+	log2stdout("tid: %lu end fail", (unsigned long)tid);
 	return -ret;/* fail */
 
 }
@@ -348,7 +348,7 @@ void * UNIXSocket::receiveRoutine (UNIXSockReceiveParams * params)
 
 #if	defined(UNIX_SOCK_DEBUG)
 	/* show tid when debug */
-	log2stdout("tid: %lu begin", tid);
+	log2stdout("tid: %lu begin", (unsigned long)tid);
 #	endif
 
 	fiparams.sockfd = sockfd;/* fill FI sockfd */
@@ -418,7 +418,7 @@ int UNIXSocket::startReceiveFromPeer (UNIXSockReceiveParams * params)
 	} else {
 		/* success */
 		params->tid = tid;
-		log2stream(stdout, "start receive success: tid: %lu", tid);
+		log2stdout("start receive success: tid: %lu", (unsigned long)tid);
 		return 0;
 	}
 
@@ -465,7 +465,7 @@ void * UNIXSocket::connectBySockfd (UNIXSockConnParams * params)
 	delete params;
 	params = NULL;
 
-	log2stream(stdout, "tid: %lu begin", tid);
+	log2stdout("tid: %lu begin", (unsigned long)tid);
 
 	/* wait(select) writeable */
 	FD_ZERO(&fdwrite);
@@ -537,7 +537,7 @@ void * UNIXSocket::connectBySockfd (UNIXSockConnParams * params)
 	cparams.sockfd = sockfd;
 	onSocket->onConnect(cparams);
 
-	log2stream(stdout, "tid: %lu end success: %d", tid, ret);
+	log2stdout("tid: %lu end success: %d", (unsigned long)tid, ret);
 
 	return (void *)0;/* success */
 
@@ -553,7 +553,7 @@ select_fail:
 		rcvparams = NULL;
 	}
 
-	log2stream(stdout, "tid: %lu end fail", tid);
+	log2stdout("tid: %lu end fail", (unsigned long)tid);
 
 	return (void *)-1;/* fail */
 
