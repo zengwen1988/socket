@@ -1,9 +1,6 @@
 #include <unix/OnSocket.h>
 #include <unix/Socket.h>
 #include <unix/SocketClientHelper.h>
-#include <unix/SocketClientUtil.h>
-
-
 
 #include <unistd.h> /* close */
 #include <pthread.h> /* pthread_create */
@@ -21,7 +18,7 @@ int UNIXSocketClientHelper::startConnectToServer (
 	uint16_t port;
 
 #if defined(UNIX_SOCK_DEBUG)
-	log2stream(stdout, "start");
+	show_trace();
 #endif
 
 	/* check */

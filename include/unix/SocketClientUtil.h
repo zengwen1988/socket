@@ -1,6 +1,0 @@
-#if !defined (UNIXSOCKETCLIENTUTIL_H__)
-#define UNIXSOCKETCLIENTUTIL_H__ (1)
-
-
-
-#endif /* UNIXSOCKETCLIENTUTIL_H__ */
