@@ -134,6 +134,8 @@ int get_sockfd_by_ipn (uint32_t ipn/* net order */,
 
 	log2stdout("start to connect: %08x:%u success: %d", ipn, portn, sockfd);
 
+	set_sock_block(sockfd, 1);
+
 	/* success */
 	return sockfd;
 
@@ -562,5 +564,70 @@ int start_conn_by_sock_fd (int sockfd, const sock_start_conn_t * ps)
 sconnfail:
 	log2stdout("tid: %lu end fail", (unsigned long)tid);
 	return -ret;/* fail */
+
+}
+
+
+/*
+ * NAME send_data - send data to socket (sockfd)
+ *
+ * DESC
+ *   - For both client and server
+ *   - Send start is: buf + start
+ *   - NOTE: should use valid arguments
+ */
+ssize_t send_data (int sockfd, const uint8_t * data,  int start,
+	size_t nbyte)
+{
+	int ret;
+	ssize_t wo = 0;/* already wrote */
+	ssize_t w;
+
+	while ((nbyte - wo) > 0) {
+		w = write(sockfd, data + start + (int)wo, nbyte - wo);
+
+		if (w < 0) {
+			ret = -errno;
+
+			log2stream(stderr, "write fail");
+
+			return (ssize_t)ret;
+		} else {
+			wo += w;
+		}
+	}
+
+	return wo;
+}
+
+
+/*
+ * Shut down all or part of the connection open on socket FD.
+ *
+ * HOW determines what to shut down:
+ *   SHUT_RD   = No more receptions;
+ *   SHUT_WR   = No more transmissions;
+ *   SHUT_RDWR = No more receptions or transmissions.
+ *
+ * Returns 0 on success, -1 for errors.
+ */
+int close_socket (int sockfd)
+{
+
+	int ret;
+
+	ret = shutdown(sockfd, SHUT_RDWR);
+
+	if (0 != ret) {
+		error2stream(stderr, "shutdown fail: ignore");
+	}
+
+	ret = close(sockfd);
+
+	if (0 != ret) {
+		error2stream(stderr, "close fail");
+	}
+
+	return ret;
 
 }
