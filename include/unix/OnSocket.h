@@ -7,6 +7,8 @@
 
 class UNIXOnSocket {
 
+public: virtual ~UNIXOnSocket() {}
+
 /* override this */
 public: virtual int onConnect(sock_on_conn_t);
 
@@ -18,7 +20,6 @@ public: virtual int onReceived(int, const uint8_t *, size_t);
 
 /* override this */
 public: virtual bool shouldTeminateRecv(int sockfd);
-
 };
 
 #endif /* UNIXONSOCKET_H__ */

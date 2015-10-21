@@ -89,6 +89,14 @@ sconnfail:
 }
 
 
+/*
+ * DESC
+ *   - callback onConnect:
+ *   .code: 0 when all success
+ *   .code: > 0: with some error can be ignore
+ *   .code: < 0: fatal error (-errno):
+ *   -EINVAL: argument error
+ */
 void * UNIXSocket::connectByDomain (UNIXSockConnParamsDomain * domain)
 {
 
@@ -122,14 +130,18 @@ void * UNIXSocket::connectByDomain (UNIXSockConnParamsDomain * domain)
 	delete domain;
 	domain = NULL;
 
+	code = 0;
+
 	/* parse dns */
 	hptr = gethostbyname(dom);
 
 	if ((NULL == hptr) || (NULL == hptr->h_addr)) {
+		code = -EINVAL;
 		goto gethostfail;
 	}
 
 	if (AF_INET != hptr->h_addrtype) {
+		code = -EINVAL;
 		goto gethosttypefail;
 	}
 
@@ -146,6 +158,7 @@ void * UNIXSocket::connectByDomain (UNIXSockConnParamsDomain * domain)
 	sockfd = get_sockfd_by_ipn(ipn, portn);
 
 	if (sockfd < 0) {
+		code = sockfd;
 		goto getsockfd_fail;
 	}
 
@@ -161,12 +174,13 @@ void * UNIXSocket::connectByDomain (UNIXSockConnParamsDomain * domain)
 	if (ret < 0) {
 		ret = errno;
 
-		log2stream(stderr, "select writable fail");
+		error2stream(stderr, "select writable fail");
 
+		code = errno;
 		goto select_fail;
 	} else if (0 == ret) {
 		/* timeout */
-		ret = ETIMEDOUT;
+		code = ETIMEDOUT;
 
 		log2stream(stderr, "connnect timeout");
 
@@ -179,7 +193,9 @@ void * UNIXSocket::connectByDomain (UNIXSockConnParamsDomain * domain)
 
 		if (0 != ret) {
 			/* connect fail */
-			log2stream(stderr, "select fail");
+			errno = ret;
+			code = -ret;
+			error2stream(stderr, "select fail");
 
 			goto select_fail;
 		}
@@ -207,10 +223,11 @@ void * UNIXSocket::connectByDomain (UNIXSockConnParamsDomain * domain)
 	ret = UNIXSocket::startReceiveFromPeer(rcvparams);
 	if (0 != ret) {
 		error2stream(stderr, "start_receive_from_peer fail");
-		code = 1;
+		code = ret;
 		delete rcvparams;
 		rcvparams = NULL;
 	} else {
+		/* success */
 		code = 0;
 	}
 	rcvparams = NULL;
@@ -226,7 +243,7 @@ void * UNIXSocket::connectByDomain (UNIXSockConnParamsDomain * domain)
 select_to:
 select_fail:
 
-	cparams.code = -1;
+	cparams.code = code;
 	cparams.sockfd = -1;
 	onSocket->onConnect(cparams);
 
@@ -256,6 +273,11 @@ fail:
 }
 
 
+/*
+ * RETURN
+ *   - success: 0
+ *   - fail: -errno
+ */
 int UNIXSocket::startConnectByDomain (const UNIXSockStartConnParamsD * ps)
 {
 	int ret;

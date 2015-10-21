@@ -68,6 +68,11 @@ conn_fail:
 }
 
 
+/*
+ * RETURN
+ *   - success: 0
+ *   - fail: -errno
+ */
 int UNIXSocketClientHelper::startConnectByDomain (
 	const UNIXSockStartConnParamsD * ps)
 {

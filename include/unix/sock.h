@@ -27,6 +27,14 @@ extern "C" {
 
 #include <stdint.h> /* uint8_t .. */
 
+typedef enum _socket_status_t {
+	SOCK_STATUS_UNKNOWN = 0,
+	SOCK_STATUS_CONNECTING,
+	SOCK_STATUS_CONNECTED,
+	SOCK_STATUS_DISCONNECTING,
+	SOCK_STATUS_DISCONNECTED,
+} socket_status_t;
+
 typedef struct _sock_connect_info_t {
 	uint32_t peer_ip;
 	uint16_t peer_port;
@@ -103,6 +111,10 @@ extern int start_conn_by_sock_fd(int sockfd,
 	const sock_start_conn_t * ps);
 extern ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 size_t max, uint32_t wr_us, uint32_t r_us);
+
+extern ssize_t send_data(int sockfd, const uint8_t * data,  int start,
+	size_t nbyte);
+extern int close_socket(int sockfd);
 
 #if defined(__cplusplus)
 }
