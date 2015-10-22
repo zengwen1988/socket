@@ -17,12 +17,13 @@ DEFINES += "UNIX_SOCK_DEBUG=1"
 
 # source
 # common
-SOURCES += ../../../unix/unix_sock.c
-SOURCES += ../../../unix/unix_sock_util.c
-SOURCES += ../../../unix/UNIXOnSocket.cxx
-SOURCES += ../../../unix/UNIXSocket.cxx
-SOURCES += ../../../unix/UNIXSockParams.cxx
-SOURCES += ../../../unix/UNIXSocketClientHelper.cxx
+SOURCES += ../../../sock/sock.c
+SOURCES += ../../../sock/sock_util.c
+# client only
+SOURCES += ../../../xsock/XSockClientUtil.cxx
+SOURCES += ../../../xsock/XOnClientSocket.cxx
+SOURCES += ../../../xsock/XSockParams.cxx
+SOURCES += ../../../xsock/XSockClientHelper.cxx
 
 SOURCES += ../../../test/2/random.c
 SOURCES += ../../../test/2/timer/SimpleTimer.cxx

@@ -1,9 +1,9 @@
 #if !defined (MYONSOCKET_H__)
 #define MYONSOCKET_H__ (1)
 
-#include <unix/OnSocket.h>
+#include <OnClientSocket.hxx>
 
-class MyOnSocket: public UNIXOnSocket
+class MyOnSocket: public XOnClientSocket
 {
 
 public: MyOnSocket();

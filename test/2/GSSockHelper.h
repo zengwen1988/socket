@@ -1,7 +1,7 @@
 #if !defined(GSSOCKHELPER_H__)
 #define GSSOCKHELPER_H__ (1)
 
-#include <unix/SockParams.h>
+#include <SockParams.hxx>
 
 #include "MyOnSocket.h"
 
@@ -22,7 +22,7 @@ public: static socket_status_t getSockStatus (void)
 
 public: static MyOnSocket * getSock () { return GSSockHelper::os; }
 
-private: static UNIXSockStartConnParamsD * ps;
+private: static XSockStartConnParamsD * ps;
 private: static MyOnSocket * os;
 private: static socket_status_t sock_status;
 

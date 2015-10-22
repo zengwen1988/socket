@@ -1,7 +1,7 @@
-#include <unix/sock.h>
+#include <sock.h>
 #include <c_log.h>
 
-#include <unix/SocketClientHelper.h>
+#include <SockClientHelper.hxx>
 
 #include "GSSockHelper.h"
 
@@ -24,11 +24,12 @@ int GSSockHelper::connectToServer (void)
 	// "192.168.0.113", 5577, 15, os);
 	// "183.237.232.202", 60005, 15, os);
 	// "192.168.0.112", 5577, 15, os);
-	GSSockHelper::ps
-		= new UNIXSockStartConnParamsD("192.168.0.112", 5577,
+	// new XSockStartConnParamsD("192.168.0.112", 5577,
+	GSSockHelper::ps =
+		new XSockStartConnParamsD("183.237.232.202", 60005,
 		15, GSSockHelper::os);
 
-	int ret = UNIXSocketClientHelper::startConnectByDomain(
+	int ret = XSockClientHelper::startConnectByDomain(
 		GSSockHelper::ps);
 	if (0 != ret) {
 		GSSockHelper::sock_status = SOCK_STATUS_UNKNOWN;
@@ -51,6 +52,7 @@ int GSSockHelper::disconnect ()
 	if (NULL != GSSockHelper::os) {
 		int fd = GSSockHelper::os->getSockfd();
 		if (fd >= 0) {
+			shutdown_socket(fd, SDH_SHUT_RDWR);
 			ret = close_socket(fd);
 		}
 
@@ -68,6 +70,6 @@ int GSSockHelper::disconnect ()
 }
 
 
-UNIXSockStartConnParamsD * GSSockHelper::ps = NULL;
+XSockStartConnParamsD * GSSockHelper::ps = NULL;
 MyOnSocket * GSSockHelper::os = NULL;
 socket_status_t GSSockHelper::sock_status = SOCK_STATUS_UNKNOWN;

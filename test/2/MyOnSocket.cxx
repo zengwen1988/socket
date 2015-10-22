@@ -21,8 +21,8 @@ static int __reconnect (uint64_t, int, void *)
 /* override */
 int MyOnSocket::onConnect (sock_on_conn_t sc)
 {
-	log2stdout("code: %d sockfd: %d peer-ip: 0x%x:%u", sc.code,
-	sc.sockfd, sc.info.peer_ip, sc.info.peer_port);
+	log2stdout("code: %d sockfd: %d peer-ip: %s:%u", sc.code,
+	sc.sockfd, sc.info.ip, sc.info.port);
 
 	if (sc.code >= 0) {
 		this->sockfd = sc.sockfd;

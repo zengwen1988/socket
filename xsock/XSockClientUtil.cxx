@@ -233,6 +233,9 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 	}
 	rcvparams = NULL;
 
+	memset(&cparams, 0, sizeof(sock_on_conn_t));
+	strncpy(cparams.info.ip, ipstr, SOCK_MAX_IP_LEN);
+	cparams.info.port = ntohs(portn);
 	cparams.code = code;
 	cparams.sockfd = sockfd;
 	onSocket->onConnect(cparams);

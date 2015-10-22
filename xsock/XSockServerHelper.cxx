@@ -1,4 +1,5 @@
 #include <SockServerHelper.hxx>
+#include <OnServerSocket.hxx>
 
 #include <stdio.h>
 #include <errno.h>
@@ -10,23 +11,27 @@ static bool __sockEQU (int sockfd1, int sockfd2)
 }
 
 
-int XSockServerHelper::startServer (const char * bindIP, uint16_t bindPort)
+int XSockServerHelper::startServer (const char * bindIP, uint16_t bindPort,
+	const XOnServerSocket * serverCallback)
 {
 
 	int ret;
-	XWSockServer * sv = NULL;
-	XWSockServerAcceptRountine * acc = NULL;
+	XSockServer * sv = NULL;
+	XSockServerAcceptRountine * acc = NULL;
 
 	if (NULL == bindIP) {
 		return -1;/* invalid IP */
 	}
 
+#if	0
 	WORD versionRequested;
     WSADATA dt;
 
     versionRequested = MAKEWORD(1,1);
 	/* load winsocket dll */
     ret = WSAStartup(versionRequested, &dt);
+#endif
+	ret = init_socket_environment();
 
 	if (0 != ret) {
 		return -2;/* load winsocket dll fail */
@@ -60,9 +65,9 @@ int XSockServerHelper::startServer (const char * bindIP, uint16_t bindPort)
 	}
 
 	/* start accept thread */
-	sv = new XWSockServer(sockfd, addr);
+	sv = new XSockServer(sockfd, addr, serverCallback);
 
-	acc = new XWSockServerAcceptRountine(sv);
+	acc = new XSockServerAcceptRountine(sv);
 
 	ret = acc->start();
 
@@ -73,10 +78,10 @@ int XSockServerHelper::startServer (const char * bindIP, uint16_t bindPort)
 
 	if (NULL == XSockServerHelper::servers) {
 		XSockServerHelper::servers
-			= SimpleKVMaker<int, XWSockServer *>::make(__sockEQU);
+			= SimpleKVMaker<int, XSockServer *>::make(__sockEQU);
 	}
 
-	kvo_t<int, XWSockServer *> red
+	kvo_t<int, XSockServer *> red
 		= XSockServerHelper::servers->remove(sockfd);
 
 	if (red.set) {
@@ -108,4 +113,4 @@ bind_fail:
 }
 
 
-SimpleKV<int, XWSockServer *> * XSockServerHelper::servers = NULL;
+SimpleKV<int, XSockServer *> * XSockServerHelper::servers = NULL;
