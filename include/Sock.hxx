@@ -4,7 +4,7 @@
 #if !defined(_WIN32)
 #	include <stdint.h>
 #else
-#	include "stdint.h"
+#	include <mingw/stdint.h>
 #endif
 
 #if !defined(_WIN32)

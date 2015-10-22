@@ -24,16 +24,17 @@
 #if !defined(SOCK_H__)
 #define SOCK_H__ (1)
 
-#include <stdint.h> /* uint8_t .. */
 
 #if !defined(_WIN32)
+#	include <stdint.h> /* uint8_t .. */
 #	include <pthread.h> /* pthread_t */
 #	include <sys/types.h> /* ssize_t */
 #	include <sys/socket.h>
 #	include <netinet/in.h>
 #else
 #	include <WinSock2.h>
-#	include <posix\type\ssize.h> /* ssize_t */
+#	include <posix/type/ssize.h> /* ssize_t */
+#	include <mingw/stdint.h> /* uint8_t .. */
 #endif
 
 #if defined(_WIN32)

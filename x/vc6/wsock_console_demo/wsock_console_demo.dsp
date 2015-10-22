@@ -89,7 +89,7 @@ SOURCE=..\..\..\test\xwin\main.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\stupid\xthread\PosixXSimpleThread.cxx
+SOURCE=..\..\..\common\xthread\PosixXSimpleThread.cxx
 # End Source File
 # Begin Source File
 

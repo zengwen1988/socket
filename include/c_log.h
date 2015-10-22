@@ -1,1 +1,1 @@
-../common/log/include/c_log.h
+/home/repo/nice-log/include/c_log.h
