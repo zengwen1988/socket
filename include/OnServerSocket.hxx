@@ -7,7 +7,14 @@ class XOnServerSocket {
 
 public: virtual ~XOnServerSocket() {}
 
-/* override this */
+/*
+ * NAME
+ *   onConnected - to override this callback
+ *
+ * NOTE-XXX
+ *   - Should not block (this callback not in a thread)
+ *   - TODO: callback in a thread
+ */
 public: virtual int onConnected(int, int, net_protocol_t) = 0;
 
 /* override this */

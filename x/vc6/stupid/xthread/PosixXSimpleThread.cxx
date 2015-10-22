@@ -9,7 +9,7 @@
 PosixXSimpleThread::PosixXSimpleThread (void * arg)
 {
 	this->running = false;
-	this->arg = NULL;
+	this->arg = arg;
 	this->exitCode = NULL;
 }
 

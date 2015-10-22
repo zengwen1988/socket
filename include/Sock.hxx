@@ -29,6 +29,10 @@ protected: XSock(void);
 
 public: ~XSock();
 
+public: int getSockfd(void) const;
+public: sockaddr_in getLocalAddress (void) const;
+public: void relaseSocket(void);
+
 protected: int sockfd;
 protected: sockaddr_in localAddress;
 

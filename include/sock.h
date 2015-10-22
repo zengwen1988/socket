@@ -1,5 +1,5 @@
 /*
- * NAME unix/sock.h - unix socket header
+ * NAME sock.h - socket header
  *
  * DESC
  *   - funcs all in c
@@ -29,6 +29,8 @@
 #if !defined(_WIN32)
 #	include <pthread.h> /* pthread_t */
 #	include <sys/types.h> /* ssize_t */
+#	include <sys/socket.h>
+#	include <netinet/in.h>
 #else
 #	include <WinSock2.h>
 #	include <posix\type\ssize.h> /* ssize_t */
@@ -48,7 +50,9 @@ extern "C" {
 #define SOCK_MAX_IP_LEN (28)
 
 typedef struct _net_protocol_t {
+	/* host order */
 	char ip[SOCK_MAX_IP_LEN + 1 + 3];
+	/* host order */
 	uint16_t port;
 	uint8_t isv6;
 } net_protocol_t;
@@ -197,6 +201,22 @@ struct _sock_recv_t {
 	should_teminate_recv_t * should_teminate_recv;
 	net_protocol_t info;
 };
+
+
+/*
+ * NAME
+ *   wait_connect - wait client connect to server
+ *
+ * DESC
+ *   Will block => e.x. call this in a thread
+ *
+ * RETURN
+ *   success: >= 0 clientfd should also check WSAGetLastError
+ *   fail: -errno or -WSA errno
+ */
+extern int __CALL_METHOD wait_connect(int serverfd,
+	struct sockaddr_in * addr);
+
 
 /* socket util */
 extern int __CALL_METHOD shutdown_socket(int sockfd, SHUTDOWN_HOW_t how);

@@ -35,7 +35,7 @@ int main (void)
 
 	printf("ret: %d", ret);
 
-	usleep(100 * 1e6);
+	usleep(1000 * 1e6);
 
 	return 0;
 

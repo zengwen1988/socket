@@ -2,41 +2,22 @@
 #define SOCKSERVER_HXX__ (1)
 
 #include <Sock.hxx> /* XSock */
-#include <OnServerSocket.hxx> /* XSock */
+#include <OnServerSocket.hxx> /* XOnServerSocket */
+#include <SockServerAcceptRoutine.hxx> /* XOnServerSocket */
 #include <sock.h>
-#include <posix/thread/XSimpleThread.hxx> /* PosixXSimpleThread */
 
-#include <stdio.h>
-
-class XSockServerhelper;
-class XSockServerAcceptRountine;
 
 class XSockServer: public XSock
 {
 
-friend class XSockServerhelper;
-
-public: XSockServer (int sockfd, sockaddr_in localAddress,
+public: XSockServer(int sockfd, sockaddr_in localAddress,
 	const XOnServerSocket * serverCallback);
 
-protected: XSockServerAcceptRountine * acceptRoutine;
-
-protected: const XOnServerSocket * serverCallback;
-
-};
-
-
-class XSockServerAcceptRountine: public PosixXSimpleThread
-{
-
-public: XSockServerAcceptRountine (void * arg) 
-	: PosixXSimpleThread (arg) {
+public: const XOnServerSocket * getServerCallback (void) const {
+	return this->serverCallback;
 }
 
-protected: virtual void * run (void * server) {
-	printf("HAHAHA!!!");
-	return (void *)222;
-}
+private: const XOnServerSocket * serverCallback;
 
 };
 

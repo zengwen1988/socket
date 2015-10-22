@@ -1,5 +1,6 @@
 #include <SockServerHelper.hxx>
 #include <OnServerSocket.hxx>
+#include <SockServerAcceptRoutine.hxx>
 
 #include <stdio.h>
 #include <errno.h>
@@ -17,7 +18,7 @@ int XSockServerHelper::startServer (const char * bindIP, uint16_t bindPort,
 
 	int ret;
 	XSockServer * sv = NULL;
-	XSockServerAcceptRountine * acc = NULL;
+	XSockServerAcceptRoutine * acc = NULL;
 
 	if (NULL == bindIP) {
 		return -1;/* invalid IP */
@@ -48,6 +49,8 @@ int XSockServerHelper::startServer (const char * bindIP, uint16_t bindPort,
 	if (sockfd < 0) {
 		fprintf(stderr, "socket: %d %d %d\n", sockfd, errno, ret);
 		return -3;/* create socket fail */
+	} else {
+		fprintf(stdout, "socket: %d\n", sockfd);
 	}
 
 	ret = bind(sockfd, (const sockaddr *)&addr, sizeof(sockaddr_in));
@@ -67,7 +70,8 @@ int XSockServerHelper::startServer (const char * bindIP, uint16_t bindPort,
 	/* start accept thread */
 	sv = new XSockServer(sockfd, addr, serverCallback);
 
-	acc = new XSockServerAcceptRountine(sv);
+	/* if started success acc will be auto release !! */
+	acc = new XSockServerAcceptRoutine(sv);
 
 	ret = acc->start();
 

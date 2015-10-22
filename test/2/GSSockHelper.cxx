@@ -25,8 +25,9 @@ int GSSockHelper::connectToServer (void)
 	// "183.237.232.202", 60005, 15, os);
 	// "192.168.0.112", 5577, 15, os);
 	// new XSockStartConnParamsD("192.168.0.112", 5577,
+	// new XSockStartConnParamsD("183.237.232.202", 60005,
 	GSSockHelper::ps =
-		new XSockStartConnParamsD("183.237.232.202", 60005,
+		new XSockStartConnParamsD("192.168.0.119", 12345,
 		15, GSSockHelper::os);
 
 	int ret = XSockClientHelper::startConnectByDomain(

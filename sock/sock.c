@@ -680,6 +680,71 @@ ssize_t send_data (int sockfd, const uint8_t * data,  int start,
 	return wo;
 }
 
+
+/*
+ * NAME
+ *   wait_connect - wait client connect to server
+ *
+ * DESC
+ *   Will block => e.x. call this in a thread
+ *
+ * RETURN
+ *   success: >= 0 clientfd should also check WSAGetLastError
+ *   fail: -errno or -WSA errno
+ */
+int wait_connect (int serverfd, struct sockaddr_in * addr)
+{
+
+#if	defined(_WIN32)
+	int le;
+#endif
+	int fd_conned;
+	struct sockaddr_in _addr;
+	int len;
+
+	memset(&_addr, 0, sizeof(struct sockaddr_in));
+	len = sizeof(struct sockaddr_in);/* XXX-NOTE: len NOT 0 */
+
+#if	defined(_WIN32)
+	WSASetLastError(0);
+#endif
+
+	/*  accept */
+	fd_conned = accept(serverfd,
+#if		!defined(_WIN32)
+		(struct sockaddr *)&_addr,
+		(socklen_t *)&len);
+#else
+		(struct sockaddr *)&_addr,
+		&len);
+#endif
+
+	if (fd_conned >= 0) {
+
+#if		defined(_WIN32)
+		if (0 == fd_conned) {
+			le = WSAGetLastError();
+			if (0 != le) {
+				return -le;
+			}
+		}
+#endif
+
+		if (NULL != addr) {
+			memcpy(addr, &_addr, sizeof(struct sockaddr));
+		}
+
+		return fd_conned;
+	} else {
+#if		!defined(_WIN32)
+		return -errno;
+#else
+		return -1 * WSAGetLastError();
+#endif
+	}
+
+}
+
 #if defined(__cplusplus)
 }
 #endif
