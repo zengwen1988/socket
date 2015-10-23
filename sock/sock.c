@@ -37,11 +37,11 @@
 #include <sock.h>
 
 #include <stdlib.h>
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #	include <pthread.h>
 #endif
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #	include <unistd.h> /* usleep */
 #else
 #	include <posix/func/usleep.h>
@@ -49,12 +49,12 @@
 #	include <posix/func/snprintf.h>
 #endif
 #include <fcntl.h> /* F_GETFL .. */
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #	include <sys/socket.h> /* SOL_SOCKET .. */
 #	include <arpa/inet.h>
 #endif
 #include <sys/types.h>
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #	include <netinet/in.h>
 #endif
 #include <sys/stat.h>
@@ -62,6 +62,10 @@
 #include <errno.h>
 #include <string.h>
 #include <c_logfile.h> /* log */
+
+#if defined(WIN32) && !defined(ETIMEDOUT)
+#	define ETIMEDOUT (110)
+#endif
 
 #if defined(__cplusplus)
 extern "C" {
@@ -82,12 +86,12 @@ extern "C" {
  *   - success: sockfd >= 0
  *   - fail: -errno
  */
-#if !defined(_WIN32)
+#if !defined(WIN32)
 int get_sockfd_by_ip (uint32_t ip, uint16_t port)
 {
 	return get_sockfd_by_ipn(htonl(ip), htons(port));
 }
-#endif /* !defined(_WIN32) */
+#endif /* !defined(WIN32) */
 
 
 /*
@@ -101,7 +105,7 @@ int get_sockfd_by_ip (uint32_t ip, uint16_t port)
  *   - sockfd(>= 0) when success
  *   - -errno < 0 when fail
  */
-#if !defined(_WIN32)
+#if !defined(WIN32)
 int get_sockfd_by_ipn (uint32_t ipn/* net order */,
 	uint16_t portn /* net order */)
 {
@@ -191,7 +195,7 @@ sock_fail:
 	return ret;
 
 }
-#endif /* !defined(_WIN32) */
+#endif /* !defined(WIN32) */
 
 
 /*
@@ -202,7 +206,7 @@ sock_fail:
  *   - ip: ip string in host order
  *   - port: port in host order
  */
-#if !defined(_WIN32)
+#if !defined(WIN32)
 int get_sockfd_by_ipstr (const char * ip, uint16_t port)
 {
 
@@ -214,7 +218,7 @@ int get_sockfd_by_ipstr (const char * ip, uint16_t port)
 	return get_sockfd_by_ipn(inet_addr(ip), htons(port));
 
 } /* get_sockfd_by_ipstr */
-#endif /* !defined(_WIN32) */
+#endif /* !defined(WIN32) */
 
 
 /*
@@ -277,7 +281,7 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 
 	/* FIXME: check ret */
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 		&timeout_r,
 		(socklen_t)sizeof(struct timeval));
 #else
@@ -287,7 +291,7 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 
 	/* XXX-FIXED: MSG_WAITALL -> MSG_DONTWAIT iOS ! */
 	ret = (int)recv(sockfd, buf + start, max,
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 		MSG_DONTWAIT);
 #else
 		0x40);
@@ -295,7 +299,7 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 
 	/* FIXME: check if here ok */
 	if ((ret < 0)
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 		&& (EAGAIN == errno)) {
 #else
 		&& (11 == errno)) {
@@ -304,7 +308,7 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 		ret = -1003;
 		goto end;
 	} else if ((ret < 0)
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 		&& (EWOULDBLOCK == errno)) {
 #else
 		&& (11 == errno)) {
@@ -405,7 +409,7 @@ static void * receive_routine (struct _sock_recv_t * params)
 }
 
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 static int start_receive_from_peer (struct _sock_recv_t * params)
 {
 
@@ -449,7 +453,7 @@ static int start_receive_from_peer (struct _sock_recv_t * params)
 	/* FIXME: add this func */
 	return 0;
 }
-#endif /* !_WIN32 */
+#endif /* !WIN32 */
 
 
 /*
@@ -466,7 +470,7 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 #	endif
 	int code;
 	fd_set fdwrite;
-#if	!defined(_WIN32)
+#if	!defined(WIN32)
 	pthread_t tid;
 #else
 	void * tid;
@@ -509,7 +513,7 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 
 	/* wait(select) writeable */
 	FD_ZERO(&fdwrite);
-#if	!defined(_WIN32)
+#if	!defined(WIN32)
 	FD_SET(sockfd, &fdwrite);
 #else
 	FD_SET((unsigned int)sockfd, &fdwrite);
@@ -528,7 +532,7 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 		goto select_fail;
 	} else if (0 == ret) {
 		/* timeout */
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 		ret = ETIMEDOUT;
 #else
 		ret = 110;
@@ -541,7 +545,7 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 		/* final check sokcet error */
 		int errlen = sizeof(ret);
 		getsockopt(sockfd, SOL_SOCKET, SO_ERROR,
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 			&ret,
 			(socklen_t *)&errlen);
 #else
@@ -625,7 +629,7 @@ select_fail:
 }
 
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 /**/
 int start_conn_by_sock_fd (int sockfd, const sock_start_conn_t * ps)
 {
@@ -697,7 +701,7 @@ sconnfail:
 	return -ret;/* fail */
 
 }
-#endif /* !_WIN32 */
+#endif /* !WIN32 */
 
 
 /*
@@ -714,10 +718,9 @@ ssize_t send_data (int sockfd, const uint8_t * data,  int start,
 	int ret;
 	ssize_t wo = 0;/* already wrote */
 	ssize_t w;
-	char dmsg[256];
 
 	while ((nbyte - wo) > 0) {
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 		w = write(sockfd, data + start + (int)wo, nbyte - wo);
 #else
 		w = send(sockfd, data + start + (int)wo, nbyte - wo, 0x40);
@@ -752,7 +755,7 @@ ssize_t send_data (int sockfd, const uint8_t * data,  int start,
 int wait_connect (int serverfd, struct sockaddr_in * addr)
 {
 
-#if	defined(_WIN32)
+#if	defined(WIN32)
 	int le;
 #endif
 	int fd_conned;
@@ -762,13 +765,13 @@ int wait_connect (int serverfd, struct sockaddr_in * addr)
 	memset(&_addr, 0, sizeof(struct sockaddr_in));
 	len = sizeof(struct sockaddr_in);/* XXX-NOTE: len NOT 0 */
 
-#if	defined(_WIN32)
+#if	defined(WIN32)
 	WSASetLastError(0);
 #endif
 
 	/*  accept */
 	fd_conned = accept(serverfd,
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 		(struct sockaddr *)&_addr,
 		(socklen_t *)&len);
 #else
@@ -778,7 +781,7 @@ int wait_connect (int serverfd, struct sockaddr_in * addr)
 
 	if (fd_conned >= 0) {
 
-#if		defined(_WIN32)
+#if		defined(WIN32)
 		if (0 == fd_conned) {
 			le = WSAGetLastError();
 			if (0 != le) {
@@ -793,7 +796,7 @@ int wait_connect (int serverfd, struct sockaddr_in * addr)
 
 		return fd_conned;
 	} else {
-#if		!defined(_WIN32)
+#if		!defined(WIN32)
 		return -errno;
 #else
 		return -1 * WSAGetLastError();

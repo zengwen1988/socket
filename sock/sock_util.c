@@ -36,7 +36,7 @@
 
 #include <sock.h>
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #	include <unistd.h> /* close */
 #	include <sys/socket.h> /* SOL_SOCKET .. */
 #else
@@ -58,7 +58,7 @@ extern "C" {
  *   - success: 0
  *   - fail: -errno
  */
-#if !defined(_WIN32)
+#if !defined(WIN32)
 int set_sock_block(int sockfd, uint8_t block)
 {
 
@@ -113,7 +113,7 @@ int shutdown_socket (int sockfd, SHUTDOWN_HOW_t how)
 
 int close_socket (int sockfd)
 {
-#if !defined(_WIN32)
+#if !defined(WIN32)
 	return close(sockfd);
 #else
 	return closesocket(sockfd);
@@ -124,7 +124,7 @@ int close_socket (int sockfd)
 int init_socket_environment (void)
 {
 
-#if defined(_WIN32)
+#if defined(WIN32)
 	WSADATA  d;
 
 	/* init windows socket */
@@ -139,7 +139,7 @@ int init_socket_environment (void)
 void deinit_socket_environment (void)
 {
 
-#if defined(_WIN32)
+#if defined(WIN32)
 	WSACleanup();
 #endif
 

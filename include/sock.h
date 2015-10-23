@@ -25,7 +25,7 @@
 #define SOCK_H__ (1)
 
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #	include <stdint.h> /* uint8_t .. */
 #	include <pthread.h> /* pthread_t */
 #	include <sys/types.h> /* ssize_t */
@@ -37,7 +37,7 @@
 #	include <posix/mingw/stdint.h> /* uint8_t .. */
 #endif
 
-#if defined(_WIN32)
+#if defined(WIN32)
 #	define __CALL_METHOD __cdecl /* yes here also __cdecl */
 #else
 #	define __CALL_METHOD /* empty */
@@ -63,7 +63,7 @@ typedef struct _net_protocol_t {
  * SHUT_RD, SHUT_WR, SHUT_RDWR have the value 0, 1, 2
  */
 typedef enum _SHUTDOWN_HOW_t {
-#if !defined(_WIN32)
+#if !defined(WIN32)
 	SDH_SHUT_RD = 0,
 	SDH_SHUT_WR = 1,
 	SDH_SHUT_RDWR = 2,
@@ -181,7 +181,7 @@ typedef struct _sock_start_conn_t {
 struct _sock_conn_t {
 	int sockfd;
 	uint16_t timeout;/* second */
-#if	!defined(_WIN32)
+#if	!defined(WIN32)
 	pthread_t tid;/* self */
 #else
 	void * tid;/* self */
@@ -192,7 +192,7 @@ struct _sock_conn_t {
 
 struct _sock_recv_t {
 	int sockfd;
-#if	!defined(_WIN32)
+#if	!defined(WIN32)
 	pthread_t tid;/* self */
 #else
 	void * tid;/* self */

@@ -2,7 +2,7 @@
 
 #include <posix/func/usleep.h>
 
-#if defined(_WIN32)
+#if defined(WIN32)
 #	include <windows.h>
 #endif
 
@@ -22,7 +22,7 @@ int PosixXSimpleThread::start (void * arg)
 		this->setArg(arg);/* store user data */
 	}
 
-#if defined (_WIN32)
+#if defined (WIN32)
 	this->tid = CreateThread(NULL, 0,
 		reinterpret_cast<LPTHREAD_START_ROUTINE>(
 			(PosixXSimpleThread::entryPoint)),
@@ -70,7 +70,7 @@ int PosixXSimpleThread::waitFinish (void ** retval)
 
 	int ret = 0;
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 	ret = pthread_join(this->tid, retval);
 #else
 	while (this->running) {
@@ -102,7 +102,7 @@ int PosixXSimpleThread::nowFinish (void ** retval)
 		return 0;
 	}
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 	ret = pthread_cancel(this->tid);
 #else
 	ret = CloseHandle(this->tid) ? 0 : 1;

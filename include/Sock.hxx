@@ -1,13 +1,13 @@
 #if !defined(SOCK_HXX__)
 #define SOCK_HXX__ (1)
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #	include <stdint.h>
 #else
 #	include <posix/mingw/stdint.h>
 #endif
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #	include <netinet/in.h> /* sockaddr_in */
 #else
 #	pragma comment(lib, "ws2_32.lib")

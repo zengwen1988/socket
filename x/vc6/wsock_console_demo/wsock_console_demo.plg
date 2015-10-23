@@ -6,7 +6,7 @@
 --------------------Configuration: wsock_console_demo - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSPABBF.tmp" with contents
+Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSP25E0.tmp" with contents
 [
 /nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/wsock_console_demo.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "F:\REPO\SOCK\SOCKET\test\xwin\main.cxx"
@@ -17,9 +17,12 @@ Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSPABBF.tmp" with c
 "F:\REPO\SOCK\SOCKET\xsock\XSockServer.cxx"
 "F:\REPO\SOCK\SOCKET\xsock\XSockServerAcceptRoutine.cxx"
 "F:\REPO\SOCK\SOCKET\xsock\XSockServerHelper.cxx"
+"F:\repo\sock\socket\common\c_logfile.c"
+"F:\repo\sock\socket\common\time\timezone_util.c"
+"F:\repo\sock\socket\common\time\timestamp.c"
 ]
-Creating command line "cl.exe @C:\Users\yuiwong\AppData\Local\Temp\RSPABBF.tmp" 
-Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSPABC0.tmp" with contents
+Creating command line "cl.exe @C:\Users\yuiwong\AppData\Local\Temp\RSP25E0.tmp" 
+Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSP25E1.tmp" with contents
 [
 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/wsock_console_demo.pdb" /debug /machine:I386 /out:"Debug/wsock_console_demo.exe" /pdbtype:sept 
 .\Debug\main.obj
@@ -30,19 +33,25 @@ kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32
 .\Debug\XSockServer.obj
 .\Debug\XSockServerAcceptRoutine.obj
 .\Debug\XSockServerHelper.obj
+.\Debug\c_logfile.obj
+.\Debug\timezone_util.obj
+.\Debug\timestamp.obj
 ]
-Creating command line "link.exe @C:\Users\yuiwong\AppData\Local\Temp\RSPABC0.tmp"
+Creating command line "link.exe @C:\Users\yuiwong\AppData\Local\Temp\RSP25E1.tmp"
 <h3>Output Window</h3>
 Compiling...
 main.cxx
 PosixXSimpleThread.cxx
 sock.c
-f:\repo\sock\socket\sock\sock.c(537) : error C2065: 'ETIMEDOUT' : undeclared identifier
 sock_util.c
 XSock.cxx
 XSockServer.cxx
 XSockServerAcceptRoutine.cxx
 XSockServerHelper.cxx
+c_logfile.c
+timezone_util.c
+timestamp.c
+f:\repo\sock\socket\common\time\timestamp.c(45) : fatal error C1083: Cannot open include file: 'sys/time.h': No such file or directory
 Error executing cl.exe.
 
 

@@ -1,7 +1,7 @@
 #if !defined(SIMPLEKV_HXX__)
 #define SIMPLEKV_HXX__ (1)
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 #include <stdio.h> /* NULL */
 #endif
 
@@ -45,7 +45,7 @@ public: kv_t<TK, TV> kv;
 public: KV * next;
 };
 
-#if !defined(_WIN32)
+#if !defined(WIN32)
 protected: SimpleKV (SimpleKV::equ_t * equ) {
 #else
 protected: SimpleKV (equ_t * equ) {
