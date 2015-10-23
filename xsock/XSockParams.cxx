@@ -89,3 +89,37 @@ pthread_t XSockConnParamsDomain::getTid () const {
 uint16_t XSockConnParamsDomain::getTimeout () const {
 	return this->timeout;
 }
+
+
+/*
+ * ========================================================================
+ * class XSockServerCliSessionParams
+ * ========================================================================
+ */
+XSockServerCliSessionParams::XSockServerCliSessionParams (void)
+{
+	this->serverCallback = NULL;
+	this->serverfd = -1;
+	this->clifd = -1;
+}
+
+
+XSockServerCliSessionParams::XSockServerCliSessionParams (
+	XSockServerCliSessionParams &ref)
+{
+	this->serverCallback = ref.serverCallback;
+}
+
+
+const XOnServerSocket *
+XSockServerCliSessionParams::getServerCallback (void) const
+{
+	return this->serverCallback;
+}
+
+
+void XSockServerCliSessionParams::setServerCallback (
+	const XOnServerSocket * serverCallback)
+{
+	this->serverCallback = serverCallback;
+}

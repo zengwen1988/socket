@@ -1,14 +1,19 @@
 #include <sock.h>
 
+#include <SockParams.hxx>
 #include <SockServerAcceptRoutine.hxx>
+#include <SockServerCliSessionRoutine.hxx>
 #include <SockServer.hxx>
+
 #include <c_logfile.h>
+#include <posix/func/snprintf.h>
 
 #include <stdio.h>
 
 void * XSockServerAcceptRoutine::run (void * server) {
 
 	XSockServer * ss = (XSockServer *)server;
+	char dmsg[256];
 
 	if (NULL == ss) {
 		printf("No server");
@@ -25,6 +30,8 @@ void * XSockServerAcceptRoutine::run (void * server) {
 	char * p;
 	net_protocol_t clientProt;
 
+	XSockServerCliSessionParams cliSessParams;
+
 	while (! (teminate = serverCallback->shouldTeminate(serverfd))) {
 
 		memset(&addr, 0, sizeof(struct sockaddr_in));
@@ -37,10 +44,21 @@ void * XSockServerAcceptRoutine::run (void * server) {
 			p = inet_ntoa(addr.sin_addr);
 			strncpy(clientProt.ip, p, SOCK_MAX_IP_LEN + 1);
 			clientProt.port = ntohs(addr.sin_port);
-			printf("+%d: server[%d]. got connection: [%d] %s:%u\n", __LINE__,
+
+			snprintf(dmsg, 255,
+				"server[%d]. got connection: [%d] %s:%u",
 				serverfd, ret, clientProt.ip, clientProt.port);
+			dmsg[255] = 0;
+			clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
 
 			serverCallback->onConnected(serverfd, ret, clientProt);
+
+			/*
+			 * TODO start recv thread
+			 */
+			XSockServerCliSessionRoutine * clisess
+				= new XSockServerCliSessionRoutine();
+
 
 		} else {
 			fprintf(stderr, "+%d: server[%d]. willFinish: %d\n",

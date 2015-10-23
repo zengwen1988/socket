@@ -203,4 +203,34 @@ protected: pthread_t tid;
 };
 
 
+/*
+ * ==========================================================================
+ * NAME
+ *   XSockServerCliSessionParams - class for XSockServerCliSessionRoutine
+ * ==========================================================================
+ */
+class XSockServerCliSessionRoutine;
+class XSockServerAcceptRoutine;
+class XOnServerSocket;
+
+/* XXX: this class NOT delete passed in serverCallback */
+class XSockServerCliSessionParams {
+
+/* can call new / delete */
+friend class XSockServerCliSessionRoutine;
+friend class XSockServerAcceptRoutine;
+
+protected: XSockServerCliSessionParams(void);
+protected: XSockServerCliSessionParams(XSockServerCliSessionParams &ref);
+protected: ~XSockServerCliSessionParams();
+
+public: const XOnServerSocket * getServerCallback (void) const;
+protected: void setServerCallback(const XOnServerSocket * serverCallback);
+
+private: const XOnServerSocket * serverCallback;
+private: int serverfd;
+private: int clifd;
+
+};
+
 #endif /* XSOCKPARAMS_HXX__ */
