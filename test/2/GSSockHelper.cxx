@@ -1,5 +1,5 @@
 #include <sock.h>
-#include <c_log.h>
+#include <c_logfile.h>
 
 #include <SockClientHelper.hxx>
 
@@ -9,7 +9,7 @@
 int GSSockHelper::connectToServer (void)
 {
 
-	show_trace();
+	clogf_append_v2("GSSockHelper::connectToServer", __FILE__, __LINE__, 0);
 
 	GSSockHelper::disconnect();
 
@@ -46,7 +46,7 @@ int GSSockHelper::disconnect ()
 
 	int ret = 0;
 
-	show_trace();
+	clogf_append_v2("GSSockHelper::disconnect", __FILE__, __LINE__, 0);
 
 	GSSockHelper::sock_status = SOCK_STATUS_DISCONNECTING;
 

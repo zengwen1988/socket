@@ -44,7 +44,8 @@
 #endif
 #include <fcntl.h> /* F_GETFL .. */
 
-#include <c_log.h> /* debug log */
+#include <c_logfile.h> /* log */
+#include <errno.h> /* errno */
 
 #if defined(__cplusplus)
 extern "C" {
@@ -68,7 +69,7 @@ int set_sock_block(int sockfd, uint8_t block)
 	if (flags < 0) {
 		ret = -errno;
 
-		log2stream(stderr, "fcntl fail");
+		clogf_append_v2("fcntl fail", __FILE__, __LINE__, ret);
 
 		return ret;
 	}
@@ -83,7 +84,7 @@ int set_sock_block(int sockfd, uint8_t block)
 	if (ret < 0) {
 		ret = -errno;
 
-		log2stream(stderr, "fcntl fail");
+		clogf_append_v2("fcntl fail", __FILE__, __LINE__, ret);
 
 		return ret;
 	} else {

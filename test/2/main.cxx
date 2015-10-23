@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#include <c_log.h>
+#include <c_logfile.h>
 #include <random.h>
 
 #include "MyOnSocket.h"
@@ -17,10 +17,9 @@ int main (int, char * [])
 	int ret;
 	uint32_t rd;
 
+	clogf_update("cli2.log");
 
 	ret = GSSockHelper::connectToServer();
-
-	show_trace();
 
 	while (SOCK_STATUS_CONNECTING
 		== GSSockHelper::getSockStatus()) {
@@ -29,15 +28,17 @@ int main (int, char * [])
 
 	fd = GSSockHelper::getSock()->getSockfd();
 
-	show_trace();
+	clogf_append_v2("main", __FILE__, __LINE__, 0);
+
 	while (true) {
-		show_trace();
 		for (i = 0; i < 1024; ++i) {
 			rd = random_next(NULL);
 			buf[i] = rd;
 		}
+
 		ret = send_data(fd, (const uint8_t *)buf, 0, 4096);
-		log2stdout("send_data: ret: %d", ret);
+		clogf_append_v2("send_data", __FILE__, __LINE__, ret);
+
 		if (ret < 0) {
 			break;
 		}

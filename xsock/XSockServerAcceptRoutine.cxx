@@ -2,6 +2,7 @@
 
 #include <SockServerAcceptRoutine.hxx>
 #include <SockServer.hxx>
+#include <c_logfile.h>
 
 #include <stdio.h>
 

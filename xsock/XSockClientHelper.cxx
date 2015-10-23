@@ -5,8 +5,9 @@
 
 #include <unistd.h> /* close */
 #include <pthread.h> /* pthread_create */
+#include <errno.h>
 
-#include <c_log.h>
+#include <c_logfile.h>
 
 
 int XSockClientHelper::startConnectToServer (
@@ -18,17 +19,17 @@ int XSockClientHelper::startConnectToServer (
 	uint32_t ip;
 	uint16_t port;
 
-#if defined(X_SOCK_DEBUG)
-	show_trace();
+#if defined(ENABLE_SOCK_DEBUG)
+	clogf_append_v2("XSockClientHelper::startConnectToServer", __FILE__,
+		__LINE__, 0);
 #endif
 
 	/* check */
 	if ((NULL == params)
 		|| (NULL == params->getOnSocket())) {
 
-		errno = EINVAL;
-		log2stream(stderr, "null or invalid params");
-		return -EINVAL;goto conn2fail;
+		clogf_append_v2("null or invalid params", __FILE__, __LINE__, -EINVAL);
+		return -EINVAL;
 
 	}
 
@@ -39,21 +40,22 @@ int XSockClientHelper::startConnectToServer (
 
 	if (sockfd < 0) {
 		ret = -sockfd;
-		log2stream(stderr, "startConnectByProtocol fail");
+		clogf_append_v2("startConnectByProtocol fail", __FILE__, __LINE__,
+			ret);
 		goto conn_fail;
 	}
 
 	ret = XSockClientUtil::startConnBySockfd(sockfd, params);
 
 	if (0 != ret) {
-		log2stream(stderr, "start connect 2 fail");
+		clogf_append_v2("start connect 2 fail", __FILE__, __LINE__, ret);
 
 		goto conn2fail;
 	} else {
 		/* success */
 		set_sock_block(sockfd, 1);
 
-		log2stream(stdout, "start connect success");
+		clogf_append("start connect success");
 		return 0;
 	}
 

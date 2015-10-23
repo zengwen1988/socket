@@ -58,7 +58,9 @@
 #endif
 #include <sys/stat.h>
 
-#include <c_log.h> /* debug log */
+#include <errno.h>
+#include <string.h>
+#include <c_logfile.h> /* log */
 
 #if defined(__cplusplus)
 extern "C" {
@@ -106,18 +108,25 @@ int get_sockfd_by_ipn (uint32_t ipn/* net order */,
 	int ret;
 	struct sockaddr_in sa;
 	int sockfd;
+#if	defined(ENABLE_SOCK_DEBUG)
+	char dmsg[256];
+#endif
 
-#if	defined(UNIX_SOCK_DEBUG)
-	show_trace();
-#	endif
+#if	defined(ENABLE_SOCK_DEBUG)
+	/* trace */
+	clogf_append_v2("get_sockfd_by_ipn", __FILE__, __LINE__, 0);
+#endif
+
 	/* gethostbyname */
 
 	sa.sin_addr.s_addr = ipn;
 
 
-#	if defined(UNIX_SOCK_DEBUG)
-	log2stream(stdout, "ip: 0x%x addr: 0x%x", ipn, sa.sin_addr.s_addr);
-#	endif
+#if defined(ENABLE_SOCK_DEBUG)
+	snprintf(dmsg, 256, "ip: 0x%x addr: 0x%x", ipn,
+		sa.sin_addr.s_addr);
+	clogf_append(dmsg);
+#endif
 
 	sa.sin_family = AF_INET;
 	sa.sin_port = portn;
@@ -128,13 +137,13 @@ int get_sockfd_by_ipn (uint32_t ipn/* net order */,
 	if (sockfd < 0) {
 		ret = errno;
 
-		log2stream(stderr, "socket fail");
+		clogf_append_v2("socket fail", __FILE__, __LINE__, -ret);
 
 		goto sock_fail;
 	}
 
-#if	defined(UNIX_SOCK_DEBUG)
-	log2stream(stdout, "before connect");
+#if	defined(ENABLE_SOCK_DEBUG)
+	clogf_append("before connect");
 #endif
 
 	set_sock_block(sockfd, 0);
@@ -149,12 +158,17 @@ int get_sockfd_by_ipn (uint32_t ipn/* net order */,
 #endif
 		ret = errno;
 
-		log2stream(stderr, "connect fail");
+		clogf_append_v2("connect fail", __FILE__, __LINE__, -ret);
 
 		goto conn_fail;
 	}
 
-	log2stdout("start to connect: %08x:%u success: %d", ipn, portn, sockfd);
+#if	defined(ENABLE_SOCK_DEBUG)
+	snprintf(dmsg, 256,
+		"start to connect: %08x:%x success: %d", ntohl(ipn), ntohs(portn),
+		sockfd);
+	clogf_append(dmsg);
+#endif
 
 	set_sock_block(sockfd, 1);
 
@@ -216,11 +230,16 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 	struct timeval timeout, timeout_r;
 	fd_set readfds;
 	int nfds, ret;
+	char dmsg[256];
 
-#if defined(UNIX_SOCK_DEBUG)
-	log2stdout("fd: %d: buf: %p start: %d max: %zu", sockfd,
+#if defined(ENABLE_SOCK_DEBUG)
+	snprintf(dmsg, 256,
+		"fd: %d: buf: %p start: %d max: %zu", sockfd,
 		buf, start, max);
-	log2stdout("wr_us: %u r_us: %u", wr_us, r_us);
+	clogf_append(dmsg);
+	snprintf(dmsg, 256,
+		"wr_us: %u r_us: %u", wr_us, r_us);
+	clogf_append(dmsg);
 #	endif
 
 	/* set select timeout */
@@ -236,7 +255,7 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 	ret = select(nfds, &readfds, NULL, NULL, &timeout);
 	if (-1 == ret) {
 		/* error */
-		error2stream(stderr, "select fail");
+		clogf_append_v2("select fail", __FILE__, __LINE__, -errno);
 		ret = -1;
 		goto end;
 	} else if (0 == ret) {
@@ -268,6 +287,7 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 		0x40);
 #endif
 
+	/* FIXME: check if here ok */
 	if ((ret < 0)
 #if		!defined(_WIN32)
 		&& (EAGAIN == errno)) {
@@ -284,15 +304,15 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 		&& (11 == errno)) {
 #endif
 		/* recv: EWOULDBLOCK */
-		error2stream(stderr, "recv fail");
+		clogf_append_v2("recv fail", __FILE__, __LINE__, -errno);
 		ret = -2;
 		goto end;
 	} else if (ret <0) {
+		clogf_append_v2("recv fail", __FILE__, __LINE__, -errno);
 		ret = -3;
-		error2stream(stderr, "recv fail");
 		goto end;
 	} else if (0 == ret) {
-		error2stream(stdout, "peer disconnected");
+		clogf_append_v2("peer disconnected", __FILE__, __LINE__, 1);
 	}
 
 end:
@@ -349,13 +369,14 @@ static void * receive_routine (struct _sock_recv_t * params)
 			(unsigned int)(15 * 1e6));
 
 		if ((ret < 0) && (ret > -1000)) {
-			log2stream(stdout, "will exit: %d", ret);
+			clogf_append_v2("will finish", __FILE__, __LINE__, ret);
 			fiparams.code = ret;/* fail */
 			will_finish(fiparams);
 			return NULL;
 		} else if (0 == ret) {
 			/* disconnected */
-			log2stream(stdout, "will exit");
+			clogf_append_v2("will exit when has disconnected", __FILE__,
+				__LINE__, 1);
 			fiparams.code = 0;
 			will_finish(fiparams);
 			return NULL;
@@ -384,9 +405,10 @@ static int start_receive_from_peer (struct _sock_recv_t * params)
 
 	int ret;
 	pthread_t tid;
+	char dmsg[256];
 
-#if defined(UNIX_SOCK_DEBUG)
-	log2stream(stdout, "start");
+#if defined(ENABLE_SOCK_DEBUG)
+	clogf_append_v2("tart_receive_from_peer", __FILE__, __LINE__, 0);
 #endif
 
 	/* let thread to do recv */
@@ -396,14 +418,20 @@ static int start_receive_from_peer (struct _sock_recv_t * params)
 	if (0 != ret) {
 		errno = ret;
 
-		error2stream(stderr, "start receive fail");
+		clogf_append_v2("start receive fail", __FILE__, __LINE__, -ret);
 
 		return -ret;
 	} else {
 		/* success */
 		params->tid = tid;
-		log2stream(stdout, "start receive success: tid: %lu",
+
+#if 	defined(ENABLE_SOCK_DEBUG)
+		snprintf(dmsg, 256,
+			"start receive routine success: tid: %lu",
 			(unsigned long)tid);
+		clogf_append(dmsg);
+#endif
+
 		return 0;
 	}
 
@@ -444,10 +472,10 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	struct _sock_recv_t * rcvparams = NULL;
 	net_protocol_t info;
 	sock_on_conn_t oncparams;
-
+	char dmsg[256];
 
 	if (NULL == params) {
-		log2stream(stderr, "null params");
+		clogf_append_v2("null params", __FILE__, __LINE__, -EINVAL);
 		return (void *)-EINVAL;
 	}
 
@@ -461,11 +489,15 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	should_teminate_recv = params->on_sock.should_teminate_recv;
 	memcpy(&info, &(params->info), sizeof(net_protocol_t));
 
+	/* FIXME: not use usleep here */
 	usleep(5 * 1e3); /* 5 mesc */
+
 	free(params);
 	params = NULL;
 
-	log2stream(stdout, "tid: %lu begin", (unsigned long)tid);
+	snprintf(dmsg, 256,
+		"tid: %lu begin", (unsigned long)tid);
+	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
 
 	/* wait(select) writeable */
 	FD_ZERO(&fdwrite);
@@ -483,7 +515,7 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	if (ret < 0) {
 		ret = errno;
 
-		log2stream(stderr, "select writable fail");
+		clogf_append_v2("select writable fail", __FILE__, __LINE__, ret);
 
 		goto select_fail;
 	} else if (0 == ret) {
@@ -494,7 +526,7 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 		ret = 110;
 #endif
 
-		log2stream(stderr, "connnect timeout");
+		clogf_append_v2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
 
 		goto select_to;
 	} else {
@@ -511,14 +543,14 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 
 		if (0 != ret) {
 			/* connect fail */
-			log2stream(stderr, "select fail");
+			clogf_append_v2("select fail", __FILE__, __LINE__, errno);
 
 			goto select_fail;
 		}
 	}
 
-#	if defined(UNIX_SOCK_DEBUG)
-	log2stream(stdout, "connect success");
+#	if defined(ENABLE_SOCK_DEBUG)
+	clogf_append("connect success");
 #	endif
 
 	/* final ok */
@@ -542,7 +574,8 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	/* start on received thread */
 	ret = start_receive_from_peer(rcvparams);
 	if (0 != ret) {
-		error2stream(stderr, "start_receive_from_peer fail");
+		clogf_append_v2("start_receive_from_peer fail", __FILE__, __LINE__,
+			ret);
 		code = 1;
 		if (NULL != rcvparams) {
 			free(rcvparams);
@@ -556,7 +589,9 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	oncparams.sockfd = sockfd;
 	on_connect(oncparams);
 
-	log2stream(stdout, "tid: %lu end success: %d", (unsigned long)tid, ret);
+	snprintf(dmsg, 256,
+		"tid: %lu end success", (unsigned long)tid);
+	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
 
 	return (void *)0;/* success */
 
@@ -571,7 +606,9 @@ select_fail:
 		free(rcvparams);
 		rcvparams = NULL;
 	}
-	log2stream(stdout, "tid: %lu end fail", (unsigned long)tid);
+	snprintf(dmsg, 256,
+		"tid: %lu end fail", (unsigned long)tid);
+	clogf_append_v2(dmsg, __FILE__, __LINE__, -errno);
 
 	return (void *)-1;/* fail */
 
@@ -587,11 +624,13 @@ int start_conn_by_sock_fd (int sockfd, const sock_start_conn_t * ps)
 	pthread_t tid;
 	sock_start_conn_t d;
 	struct _sock_conn_t * dd;
+	char dmsg[256];
 
 
 	/* check */
 	if ((sockfd < 0) || (NULL == ps)) {
-		log2stream(stderr, "invalid sockfd or conn params");
+		clogf_append_v2("invalid sockfd or conn params", __FILE__, __LINE__,
+			-EINVAL);
 		return -EINVAL;
 	}
 
@@ -601,14 +640,14 @@ int start_conn_by_sock_fd (int sockfd, const sock_start_conn_t * ps)
 		|| (NULL == d.on_sock.will_finish)
 		|| (NULL == d.on_sock.on_received)
 		|| (NULL == d.on_sock.should_teminate_recv)) {
-		log2stream(stderr, "invalid callback");
+		clogf_append_v2("invalid callback", __FILE__, __LINE__, -EINVAL);
 		return -EINVAL;
 	}
 
 	dd = (struct _sock_conn_t*)malloc(sizeof(struct _sock_conn_t));
 
 	if (NULL == dd) {
-		error2stream(stderr, "malloc fail");
+		clogf_append_v2("MALLOC FAIL", __FILE__, __LINE__, -errno);
 		return  -ENOMEM;
 	}
 
@@ -622,7 +661,7 @@ int start_conn_by_sock_fd (int sockfd, const sock_start_conn_t * ps)
 
 	if (0 != ret) {
 		errno = ret;
-		error2stream(stderr, "start connect 2 fail");
+		clogf_append_v2("start connect 2 fail", __FILE__, __LINE__, ret);
 
 		free(dd);
 		dd = NULL;
@@ -630,14 +669,19 @@ int start_conn_by_sock_fd (int sockfd, const sock_start_conn_t * ps)
 	} else {
 		/*  success */
 		dd->tid = tid;
-#if 	defined(UNIX_SOCK_DEBUG)
-		log2stdout("start connect success: tid: %lu", (unsigned long)tid);
+#if 	defined(ENABLE_SOCK_DEBUG)
+		snprintf(dmsg, 256,
+			"start connect success: tid: %lu", (unsigned long)tid);
+		clogf_append(dmsg);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	log2stdout("tid: %lu end fail", (unsigned long)tid);
+	snprintf(dmsg, 256,
+		"tid: %lu end fail", (unsigned long)tid);
+	clogf_append_v2(dmsg, __FILE__, __LINE__, -ret);
+
 	return -ret;/* fail */
 
 }
@@ -658,6 +702,7 @@ ssize_t send_data (int sockfd, const uint8_t * data,  int start,
 	int ret;
 	ssize_t wo = 0;/* already wrote */
 	ssize_t w;
+	char dmsg[256];
 
 	while ((nbyte - wo) > 0) {
 #if		!defined(_WIN32)
@@ -669,7 +714,8 @@ ssize_t send_data (int sockfd, const uint8_t * data,  int start,
 		if (w < 0) {
 			ret = -errno;
 
-			log2stream(stderr, "write fail");
+			snprintf(dmsg, 256,
+				"write fail: %s", strerror(errno));
 
 			return (ssize_t)ret;
 		} else {

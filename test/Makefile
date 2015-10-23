@@ -26,13 +26,13 @@ STRIP := $(CROSS_COMPILER)strip
 PATH2INC ?= ../include
 CFLAGS += -I$(PATH2INC)
 CFLAGS += -Wall -Wno-unused-parameter
-CFLAGS += -DUNIX_SOCK_DEBUG=1
+CFLAGS += -DENABLE_SOCK_DEBUG=1
 # deps
 CFLAGS += -Wp,-MD,$@.d
 
 CXXFLAGS += -I$(PATH2INC)
 CXXFLAGS += -Wall -Wno-unused-parameter
-CXXFLAGS += -DUNIX_SOCK_DEBUG=1
+CXXFLAGS += -DENABLE_SOCK_DEBUG=1
 # deps
 CXXFLAGS += -Wp,-MD,$@.d
 

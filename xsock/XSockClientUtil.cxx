@@ -13,7 +13,8 @@
 #include <sys/stat.h>
 #include <netdb.h> /* gethostbyname */
 
-#include <c_log.h>
+#include <c_logfile.h>
+#include <errno.h> /* errno */
 
 
 /*
@@ -41,19 +42,22 @@ int XSockClientUtil::startConnBySockfd (int sockfd,
 {
 	int ret;
 	pthread_t tid;
+	char dmsg[256];
 
-#if	defined(X_SOCK_DEBUG)
-	log2stream(stdout, "start");
+#if	defined(ENABLE_SOCK_DEBUG)
+	clogf_append_v2("XSockClientUtil::startConnBySockfd", __FILE__, __LINE__,
+		0);
 #endif
 
 	/* check */
 	if ((sockfd < 0) || (NULL == ps)) {
-		log2stream(stderr, "invalid sockfd or conn params");
+		clogf_append_v2("invalid sockfd or conn params", __FILE__, __LINE__,
+			-EINVAL);
 		return -EINVAL;
 	}
 
 	if (NULL == ps->getOnSocket()) {
-		log2stream(stderr, "invalid callback");
+		clogf_append_v2("invalid callback", __FILE__, __LINE__, -EINVAL);
 		return -EINVAL;
 	}
 
@@ -69,7 +73,8 @@ int XSockClientUtil::startConnBySockfd (int sockfd,
 
 	if (0 != ret) {
 		errno = ret;
-		error2stream(stderr, "start connect 2 fail");
+		snprintf(dmsg, 256,
+			"start connect 2 fail: %s", strerror(ret));
 
 		delete dps;
 		dps = NULL;
@@ -77,14 +82,18 @@ int XSockClientUtil::startConnBySockfd (int sockfd,
 	} else {
 		/*  success */
 		dps->tid = tid;
-#if 	defined(X_SOCK_DEBUG)
-		log2stdout("start connect success: tid: %lu", (unsigned long)tid);
+#if 	defined(ENABLE_SOCK_DEBUG)
+		snprintf(dmsg, 256,
+			"start connect success: tid: %lu", (unsigned long)tid);
+		clogf_append(dmsg);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	log2stdout("tid: %lu end fail", (unsigned long)tid);
+	snprintf(dmsg, 256,
+		"tid: %lu end fail", (unsigned long)tid);
+	clogf_append_v2(dmsg, __FILE__, __LINE__, -ret);
 	return -ret;/* fail */
 
 }
@@ -151,8 +160,8 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 	inet_ntop(hptr->h_addrtype, hptr->h_addr, ipstr, sizeof(ipstr));
 	ipstr[31] = '\0';
 
-#	if defined(X_SOCK_DEBUG)
-	log2stdout("ip: %s", ipstr);
+#	if defined(ENABLE_SOCK_DEBUG)
+	clogf_append(ipstr);
 #	endif
 
 	ipn = inet_addr(ipstr);
@@ -175,7 +184,7 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 	if (ret < 0) {
 		ret = errno;
 
-		error2stream(stderr, "select writable fail");
+		clogf_append_v2("select writable fail", __FILE__, __LINE__, -ret);
 
 		code = errno;
 		goto select_fail;
@@ -183,7 +192,7 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 		/* timeout */
 		code = ETIMEDOUT;
 
-		log2stream(stderr, "connnect timeout");
+		clogf_append_v2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
 
 		goto select_to;
 	} else {
@@ -196,14 +205,14 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 			/* connect fail */
 			errno = ret;
 			code = -ret;
-			error2stream(stderr, "select fail");
+			clogf_append_v2("select fail", __FILE__, __LINE__, code);
 
 			goto select_fail;
 		}
 	}
 
-#	if defined(X_SOCK_DEBUG)
-	log2stream(stdout, "connect success");
+#	if defined(ENABLE_SOCK_DEBUG)
+	clogf_append("connect success");
 #	endif
 
 	/* final ok */
@@ -223,7 +232,8 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 	/* start on received thread */
 	ret = XSockClientUtil::startReceiveFromPeer(rcvparams);
 	if (0 != ret) {
-		error2stream(stderr, "start_receive_from_peer fail");
+		clogf_append_v2("start_receive_from_peer fail", __FILE__, __LINE__,
+			ret);
 		code = ret;
 		delete rcvparams;
 		rcvparams = NULL;
@@ -240,7 +250,7 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 	cparams.sockfd = sockfd;
 	onSocket->onConnect(cparams);
 
-	log2stdout("end success: %d", ret);
+	clogf_append_v2("end success", __FILE__, __LINE__, ret);
 
 	return (void *)0;/* success */
 
@@ -258,15 +268,15 @@ select_fail:
 	return (void *)-1;
 
 getsockfd_fail:
-	error2stream(stderr, "get sock fd fail");
+	clogf_append_v2("get sock fd fail", __FILE__, __LINE__, -1);
 	goto fail;
 
 gethosttypefail:
-	error2stream(stderr, "unsupport type");
+	clogf_append_v2("unsupport type", __FILE__, __LINE__, -2);
 	goto fail;
 
 gethostfail:
-	error2stream(stderr, "parse dns fail");
+	clogf_append_v2("parse dns fail", __FILE__, __LINE__, -3);
 
 fail:
 	cparams.code = -1;
@@ -287,21 +297,19 @@ int XSockClientUtil::startConnectByDomain (const XSockStartConnParamsD * ps)
 	int ret;
 	pthread_t tid;
 	XSockConnParamsDomain * domainps;
-
-#if	defined(X_SOCK_DEBUG)
-	show_trace();
-#endif
+	char dmsg[256];
 
 	/* check */
 	if ((NULL == ps)
 		|| (NULL == ps->getOnSocket())
 		|| (strlen(ps->getDomain()) <= 0)) {
-		log2stream(stderr, "invalid domain or params");
+		clogf_append_v2("invalid domain or params", __FILE__, __LINE__,
+			-EINVAL);
 		return -EINVAL;
 	}
 
 	if (NULL == ps->getOnSocket()) {
-		log2stream(stderr, "invalid callback");
+		clogf_append_v2("invalid callback", __FILE__, __LINE__, -EINVAL);
 		return -EINVAL;
 	}
 
@@ -318,7 +326,7 @@ int XSockClientUtil::startConnectByDomain (const XSockStartConnParamsD * ps)
 
 	if (0 != ret) {
 		errno = ret;
-		error2stream(stderr, "start connect 2 fail");
+		clogf_append_v2("start connect 2 fail", __FILE__, __LINE__, -ret);
 
 		delete domainps;
 		domainps = NULL;
@@ -326,14 +334,18 @@ int XSockClientUtil::startConnectByDomain (const XSockStartConnParamsD * ps)
 	} else {
 		/*  success */
 		domainps->tid = tid;
-#if 	defined(X_SOCK_DEBUG)
-		log2stdout("start connect success: tid: %lu", (unsigned long)tid);
+#if 	defined(ENABLE_SOCK_DEBUG)
+		snprintf(dmsg, 256,
+			"start connect success: tid: %lu", (unsigned long)tid);
+		clogf_append(dmsg);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	log2stdout("tid: %lu end fail", (unsigned long)tid);
+	snprintf(dmsg, 256,
+		"tid: %lu end fail", (unsigned long)tid);
+	clogf_append_v2(dmsg, __FILE__, __LINE__, -ret);
 	return -ret;/* fail */
 
 }
@@ -351,7 +363,7 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 
 	int ret;
 	int sockfd;
-	/* pthread_t tid; */
+	pthread_t tid;
 	/* uint32_t ip;
 	uint16_t port;
 	*/
@@ -359,6 +371,13 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 	XOnClientSocket * onSocket;
 	uint8_t * buf;
 	sock_will_finish_t fiparams;
+	char dmsg[256];
+
+	if (NULL == params) {
+		clogf_append_v2("ERRO: NULL XSockReceiveParams params !!", __FILE__,
+			__LINE__, -EINVAL);
+		return (void *)-EINVAL;
+	}
 
 	/* dump */
 	sockfd = params->getSockfd();
@@ -366,15 +385,25 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 	/* ip = params->getPeerIP();
 	port = params->getPeerPort();
 	*/
-	usleep(5 * 1e3); /* 5 mesc */
-	/* tid = params->getTid(); */ /* get tid */
+	int to = 20;
+	do {
+		tid = params->getTid(); /* get tid */
+		usleep(2 * 1e3);/* 2 msec */
+	} while ((0 == tid) && (--to > 0));
 
 	delete params;
 	params = NULL;
 
-#if	defined(X_SOCK_DEBUG)
+	if (0 == tid) {
+		clogf_append_v2("ERRO: 0 tid !!", __FILE__, __LINE__, -EINVAL);
+		return (void *)-EINVAL;
+	}
+
+#if	defined(ENABLE_SOCK_DEBUG)
 	/* show tid when debug */
-	log2stdout("tid: %lu begin", (unsigned long)tid);
+	snprintf(dmsg, 256,
+		"tid: %lu begin", (unsigned long)tid);
+	clogf_append(dmsg);
 #	endif
 
 	fiparams.sockfd = sockfd;/* fill FI sockfd */
@@ -391,13 +420,14 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 		ret = recv_from_sockfd(sockfd, buf, 0, 4096, 15 * 1e6, 15 * 1e6);
 
 		if ((ret < 0) && (ret > -1000)) {
-			log2stdout("will exit: fail: %d", ret);
+			clogf_append_v2("FAIL: will finish", __FILE__, __LINE__, ret);
 			fiparams.code = ret;/* fail */
 			onSocket->willFinish(fiparams);
 			return NULL;
 		} else if (0 == ret) {
 			/* disconnected */
-			log2stream(stdout, "will exit: peer disconnected");
+			clogf_append_v2("will finish: peer disconnected", __FILE__,
+				__LINE__, 0);
 			fiparams.code = 0;
 			onSocket->willFinish(fiparams);
 			return NULL;
@@ -412,7 +442,7 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 		teminate = onSocket->shouldTeminateRecv(sockfd);
 	}
 
-	log2stream(stdout, "will exit: user terminate");
+	clogf_append_v2("will finish: user terminate", __FILE__, __LINE__, 1);
 	fiparams.code = 1;/* user terminate */
 	onSocket->willFinish(fiparams);
 
@@ -426,10 +456,9 @@ int XSockClientUtil::startReceiveFromPeer (XSockReceiveParams * params)
 
 	int ret;
 	pthread_t tid;
+	char dmsg[256];
 
-#if defined(X_SOCK_DEBUG)
-	log2stream(stdout, "start");
-#endif
+	params->tid = 0;
 
 	/* let thread to do recv */
 	ret = pthread_create(&tid, NULL,
@@ -438,13 +467,15 @@ int XSockClientUtil::startReceiveFromPeer (XSockReceiveParams * params)
 	if (0 != ret) {
 		errno = ret;
 
-		error2stream(stderr, "start receive fail");
+		clogf_append_v2("start receive fail", __FILE__, __LINE__, -ret);
 
 		return -ret;
 	} else {
 		/* success */
 		params->tid = tid;
-		log2stdout("start receive success: tid: %lu", (unsigned long)tid);
+		snprintf(dmsg, 256,
+			"start receive success: tid: %lu", (unsigned long)tid);
+		clogf_append(dmsg);
 		return 0;
 	}
 
@@ -472,9 +503,10 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	XOnClientSocket * onSocket;
 	XSockReceiveParams * rcvparams = NULL;
 	sock_on_conn_t cparams;
+	char dmsg[256];
 
 	if (NULL == params) {
-		log2stream(stderr, "null params");
+		clogf_append_v2("null params", __FILE__, __LINE__, -EINVAL);
 		return (void *)-EINVAL;
 	}
 
@@ -491,7 +523,8 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	delete params;
 	params = NULL;
 
-	log2stdout("tid: %lu begin", (unsigned long)tid);
+	snprintf(dmsg, 256, "tid: %lu begin", (unsigned long)tid);
+	clogf_append(dmsg);
 
 	/* wait(select) writeable */
 	FD_ZERO(&fdwrite);
@@ -505,14 +538,14 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	if (ret < 0) {
 		ret = errno;
 
-		log2stream(stderr, "select writable fail");
+		clogf_append_v2("select writable fail", __FILE__, __LINE__, -ret);
 
 		goto select_fail;
 	} else if (0 == ret) {
 		/* timeout */
 		ret = ETIMEDOUT;
 
-		log2stream(stderr, "connnect timeout");
+		clogf_append_v2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
 
 		goto select_to;
 	} else {
@@ -523,14 +556,14 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 
 		if (0 != ret) {
 			/* connect fail */
-			log2stream(stderr, "select fail");
+			clogf_append_v2("select fail", __FILE__, __LINE__, -ret);
 
 			goto select_fail;
 		}
 	}
 
-#	if defined(X_SOCK_DEBUG)
-	log2stream(stdout, "connect success");
+#	if defined(ENABLE_SOCK_DEBUG)
+	clogf_append("connect success");
 #	endif
 
 	/* final ok */
@@ -550,7 +583,8 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	/* start on received thread */
 	ret = XSockClientUtil::startReceiveFromPeer(rcvparams);
 	if (0 != ret) {
-		error2stream(stderr, "start_receive_from_peer fail");
+		clogf_append_v2("start_receive_from_peer fail", __FILE__, __LINE__,
+			ret);
 		code = 1;
 		delete rcvparams;
 		rcvparams = NULL;
@@ -563,7 +597,9 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	cparams.sockfd = sockfd;
 	onSocket->onConnect(cparams);
 
-	log2stdout("tid: %lu end success: %d", (unsigned long)tid, ret);
+	snprintf(dmsg, 256,
+		"tid: %lu end success", (unsigned long)tid);
+	clogf_append(dmsg);
 
 	return (void *)0;/* success */
 
@@ -579,7 +615,9 @@ select_fail:
 		rcvparams = NULL;
 	}
 
-	log2stdout("tid: %lu end fail", (unsigned long)tid);
+	snprintf(dmsg, 256,
+		"tid: %lu end fail", (unsigned long)tid);
+	clogf_append_v2(dmsg, __FILE__, __LINE__, -1);
 
 	return (void *)-1;/* fail */
 

@@ -1,8 +1,5 @@
 #include <SockParams.hxx>
 
-#include <c_log.h>
-
-
 
 XSockStartConnParams::XSockStartConnParams (uint32_t ip,
 	uint16_t port,

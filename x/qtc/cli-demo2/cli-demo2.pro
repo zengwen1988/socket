@@ -13,10 +13,13 @@ INCLUDEPATH += ../../../include
 LIBS += -lpthread
 
 # -Dxxx
-DEFINES += "UNIX_SOCK_DEBUG=1"
+DEFINES += "ENABLE_SOCK_DEBUG=1"
 
 # source
 # common
+SOURCES += ../../../common/c_logfile.c
+SOURCES += ../../../common/time/timestamp.c
+SOURCES += ../../../common/time/timezone_util.c
 SOURCES += ../../../sock/sock.c
 SOURCES += ../../../sock/sock_util.c
 # client only
