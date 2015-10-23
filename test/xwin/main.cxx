@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 #include <posix/func/usleep.h>
+#include <posix/func/bzero.h>
+#include <timestamp.h>
+#include <c_logfile.h>
 
 class MyXOnServerSocket: public XOnServerSocket {
 /* override this */
@@ -31,9 +34,16 @@ int main (void)
 
 	MyXOnServerSocket ss;
 
+	char lof[1024];
+	bzero(lof, 1024);
+
+	timestampname_d(lof, "gsserverr.", ".log");
+	clogf_update(lof);
+
 	int ret = XSockServerHelper::startServer("0.0.0.0", 12345, &ss);
 
-	printf("ret: %d", ret);
+	clogf_append_v2("XSockServerHelper::startServer", __FILE__, __LINE__,
+		ret);
 
 	usleep(1000 * 1e6);
 
