@@ -46,6 +46,7 @@
 #else
 #	include <posix/func/usleep.h>
 #	include <posix/func/bzero.h>
+#	include <posix/func/snprintf.h>
 #endif
 #include <fcntl.h> /* F_GETFL .. */
 #if !defined(_WIN32)
@@ -123,8 +124,9 @@ int get_sockfd_by_ipn (uint32_t ipn/* net order */,
 
 
 #if defined(ENABLE_SOCK_DEBUG)
-	snprintf(dmsg, 256, "ip: 0x%x addr: 0x%x", ipn,
+	snprintf(dmsg, 255, "ip: 0x%x addr: 0x%x", ipn,
 		sa.sin_addr.s_addr);
+	dmsg[255] = '\0';
 	clogf_append(dmsg);
 #endif
 
@@ -164,9 +166,10 @@ int get_sockfd_by_ipn (uint32_t ipn/* net order */,
 	}
 
 #if	defined(ENABLE_SOCK_DEBUG)
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"start to connect: %08x:%x success: %d", ntohl(ipn), ntohs(portn),
 		sockfd);
+	dmsg[255] = '\0';
 	clogf_append(dmsg);
 #endif
 
@@ -230,17 +233,20 @@ ssize_t recv_from_sockfd (int32_t sockfd, uint8_t * buf, int32_t start,
 	struct timeval timeout, timeout_r;
 	fd_set readfds;
 	int nfds, ret;
+#if defined(ENABLE_SOCK_DEBUG)
 	char dmsg[256];
+#endif
 
 #if defined(ENABLE_SOCK_DEBUG)
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"fd: %d: buf: %p start: %d max: %zu", sockfd,
 		buf, start, max);
+	dmsg[255] = '\0';
 	clogf_append(dmsg);
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"wr_us: %u r_us: %u", wr_us, r_us);
 	clogf_append(dmsg);
-#	endif
+#endif
 
 	/* set select timeout */
 	timeout.tv_sec = (long int)(wr_us / 1e6);
@@ -426,9 +432,10 @@ static int start_receive_from_peer (struct _sock_recv_t * params)
 		params->tid = tid;
 
 #if 	defined(ENABLE_SOCK_DEBUG)
-		snprintf(dmsg, 256,
+		snprintf(dmsg, 255,
 			"start receive routine success: tid: %lu",
 			(unsigned long)tid);
+		dmsg[255] = '\0';
 		clogf_append(dmsg);
 #endif
 
@@ -495,8 +502,9 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	free(params);
 	params = NULL;
 
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu begin", (unsigned long)tid);
+	dmsg[255] = '\0';
 	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
 
 	/* wait(select) writeable */
@@ -589,8 +597,9 @@ static void * connect_by_sock_fd (struct _sock_conn_t * params)
 	oncparams.sockfd = sockfd;
 	on_connect(oncparams);
 
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu end success", (unsigned long)tid);
+	dmsg[255] = '\0';
 	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
 
 	return (void *)0;/* success */
@@ -606,8 +615,9 @@ select_fail:
 		free(rcvparams);
 		rcvparams = NULL;
 	}
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu end fail", (unsigned long)tid);
+	dmsg[255] = '\0';
 	clogf_append_v2(dmsg, __FILE__, __LINE__, -errno);
 
 	return (void *)-1;/* fail */
@@ -670,16 +680,18 @@ int start_conn_by_sock_fd (int sockfd, const sock_start_conn_t * ps)
 		/*  success */
 		dd->tid = tid;
 #if 	defined(ENABLE_SOCK_DEBUG)
-		snprintf(dmsg, 256,
+		snprintf(dmsg, 255,
 			"start connect success: tid: %lu", (unsigned long)tid);
+		dmsg[255] = '\0';
 		clogf_append(dmsg);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu end fail", (unsigned long)tid);
+	dmsg[255] = '\0';
 	clogf_append_v2(dmsg, __FILE__, __LINE__, -ret);
 
 	return -ret;/* fail */
@@ -714,8 +726,7 @@ ssize_t send_data (int sockfd, const uint8_t * data,  int start,
 		if (w < 0) {
 			ret = -errno;
 
-			snprintf(dmsg, 256,
-				"write fail: %s", strerror(errno));
+			clogf_append_v2("write fail", __FILE__, __LINE__, ret);
 
 			return (ssize_t)ret;
 		} else {

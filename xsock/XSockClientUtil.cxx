@@ -73,8 +73,9 @@ int XSockClientUtil::startConnBySockfd (int sockfd,
 
 	if (0 != ret) {
 		errno = ret;
-		snprintf(dmsg, 256,
+		snprintf(dmsg, 255,
 			"start connect 2 fail: %s", strerror(ret));
+		dmsg[255] = 0;
 
 		delete dps;
 		dps = NULL;
@@ -83,16 +84,18 @@ int XSockClientUtil::startConnBySockfd (int sockfd,
 		/*  success */
 		dps->tid = tid;
 #if 	defined(ENABLE_SOCK_DEBUG)
-		snprintf(dmsg, 256,
+		snprintf(dmsg, 255,
 			"start connect success: tid: %lu", (unsigned long)tid);
+		dmsg[255] = 0;
 		clogf_append(dmsg);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu end fail", (unsigned long)tid);
+	dmsg[255] = 0;
 	clogf_append_v2(dmsg, __FILE__, __LINE__, -ret);
 	return -ret;/* fail */
 
@@ -335,16 +338,18 @@ int XSockClientUtil::startConnectByDomain (const XSockStartConnParamsD * ps)
 		/*  success */
 		domainps->tid = tid;
 #if 	defined(ENABLE_SOCK_DEBUG)
-		snprintf(dmsg, 256,
+		snprintf(dmsg, 255,
 			"start connect success: tid: %lu", (unsigned long)tid);
+		dmsg[255] = 0;
 		clogf_append(dmsg);
 #		endif
 		return 0;
 	}
 
 sconnfail:
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu end fail", (unsigned long)tid);
+	dmsg[255] = 0;
 	clogf_append_v2(dmsg, __FILE__, __LINE__, -ret);
 	return -ret;/* fail */
 
@@ -401,8 +406,9 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 
 #if	defined(ENABLE_SOCK_DEBUG)
 	/* show tid when debug */
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu begin", (unsigned long)tid);
+	dmsg[255] = 0;
 	clogf_append(dmsg);
 #	endif
 
@@ -473,8 +479,9 @@ int XSockClientUtil::startReceiveFromPeer (XSockReceiveParams * params)
 	} else {
 		/* success */
 		params->tid = tid;
-		snprintf(dmsg, 256,
+		snprintf(dmsg, 255,
 			"start receive success: tid: %lu", (unsigned long)tid);
+		dmsg[255] = 0;
 		clogf_append(dmsg);
 		return 0;
 	}
@@ -523,7 +530,8 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	delete params;
 	params = NULL;
 
-	snprintf(dmsg, 256, "tid: %lu begin", (unsigned long)tid);
+	snprintf(dmsg, 255, "tid: %lu begin", (unsigned long)tid);
+	dmsg[255] = 0;
 	clogf_append(dmsg);
 
 	/* wait(select) writeable */
@@ -597,8 +605,9 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	cparams.sockfd = sockfd;
 	onSocket->onConnect(cparams);
 
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu end success", (unsigned long)tid);
+	dmsg[255] = 0;
 	clogf_append(dmsg);
 
 	return (void *)0;/* success */
@@ -615,8 +624,9 @@ select_fail:
 		rcvparams = NULL;
 	}
 
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"tid: %lu end fail", (unsigned long)tid);
+	dmsg[255] = 0;
 	clogf_append_v2(dmsg, __FILE__, __LINE__, -1);
 
 	return (void *)-1;/* fail */

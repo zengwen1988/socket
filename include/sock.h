@@ -34,7 +34,7 @@
 #else
 #	include <WinSock2.h>
 #	include <posix/type/ssize.h> /* ssize_t */
-#	include <mingw/stdint.h> /* uint8_t .. */
+#	include <posix/mingw/stdint.h> /* uint8_t .. */
 #endif
 
 #if defined(_WIN32)

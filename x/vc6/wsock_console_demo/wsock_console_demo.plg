@@ -6,48 +6,49 @@
 --------------------Configuration: wsock_console_demo - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\w\AppData\Local\Temp\RSPA104.tmp" with contents
+Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSPABBF.tmp" with contents
 [
 /nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/wsock_console_demo.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "F:\REPO\SOCK\SOCKET\test\xwin\main.cxx"
+"F:\REPO\SOCK\SOCKET\common\xthread\PosixXSimpleThread.cxx"
 "F:\REPO\SOCK\SOCKET\sock\sock.c"
 "F:\REPO\SOCK\SOCKET\sock\sock_util.c"
 "F:\REPO\SOCK\SOCKET\xsock\XSock.cxx"
 "F:\REPO\SOCK\SOCKET\xsock\XSockServer.cxx"
 "F:\REPO\SOCK\SOCKET\xsock\XSockServerAcceptRoutine.cxx"
 "F:\REPO\SOCK\SOCKET\xsock\XSockServerHelper.cxx"
-"F:\repo\sock\socket\common\xthread\PosixXSimpleThread.cxx"
 ]
-Creating command line "cl.exe @C:\Users\w\AppData\Local\Temp\RSPA104.tmp" 
-Creating temporary file "C:\Users\w\AppData\Local\Temp\RSPA105.tmp" with contents
+Creating command line "cl.exe @C:\Users\yuiwong\AppData\Local\Temp\RSPABBF.tmp" 
+Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSPABC0.tmp" with contents
 [
 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/wsock_console_demo.pdb" /debug /machine:I386 /out:"Debug/wsock_console_demo.exe" /pdbtype:sept 
 .\Debug\main.obj
+.\Debug\PosixXSimpleThread.obj
 .\Debug\sock.obj
 .\Debug\sock_util.obj
 .\Debug\XSock.obj
 .\Debug\XSockServer.obj
 .\Debug\XSockServerAcceptRoutine.obj
 .\Debug\XSockServerHelper.obj
-.\Debug\PosixXSimpleThread.obj
 ]
-Creating command line "link.exe @C:\Users\w\AppData\Local\Temp\RSPA105.tmp"
+Creating command line "link.exe @C:\Users\yuiwong\AppData\Local\Temp\RSPABC0.tmp"
 <h3>Output Window</h3>
 Compiling...
 main.cxx
+PosixXSimpleThread.cxx
 sock.c
+f:\repo\sock\socket\sock\sock.c(537) : error C2065: 'ETIMEDOUT' : undeclared identifier
 sock_util.c
 XSock.cxx
 XSockServer.cxx
 XSockServerAcceptRoutine.cxx
 XSockServerHelper.cxx
-PosixXSimpleThread.cxx
-Linking...
+Error executing cl.exe.
 
 
 
 <h3>Results</h3>
-wsock_console_demo.exe - 0 error(s), 0 warning(s)
+wsock_console_demo.exe - 1 error(s), 0 warning(s)
 </pre>
 </body>
 </html>
