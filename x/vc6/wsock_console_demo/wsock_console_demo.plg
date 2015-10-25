@@ -6,54 +6,60 @@
 --------------------Configuration: wsock_console_demo - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSP5874.tmp" with contents
+Creating temporary file "C:\Users\w\AppData\Local\Temp\RSP7FDB.tmp" with contents
 [
 /nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/wsock_console_demo.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"F:\REPO\SOCK\SOCKET\test\xwin\main.cxx"
-"F:\REPO\SOCK\SOCKET\common\xthread\PosixXSimpleThread.cxx"
-"F:\REPO\SOCK\SOCKET\sock\sock.c"
-"F:\REPO\SOCK\SOCKET\sock\sock_util.c"
-"F:\REPO\SOCK\SOCKET\xsock\XSock.cxx"
-"F:\REPO\SOCK\SOCKET\xsock\XSockServer.cxx"
-"F:\REPO\SOCK\SOCKET\xsock\XSockServerAcceptRoutine.cxx"
-"F:\REPO\SOCK\SOCKET\xsock\XSockServerHelper.cxx"
-"F:\repo\sock\socket\common\c_logfile.c"
-"F:\repo\sock\socket\common\time\timezone_util.c"
-"F:\repo\sock\socket\common\time\timestamp.c"
-"F:\repo\sock\socket\common\time\gettimeofday.c"
+"F:\REPO\SOCK\SOCKET\common\c_logfile.c"
+"F:\REPO\SOCK\SOCKET\common\time\gettimeofday.c"
+"F:\REPO\SOCK\SOCKET\common\time\timestamp.c"
+"F:\REPO\SOCK\SOCKET\common\time\timezone_util.c"
+"F:\repo\sock\socket\xsocket\xsock_server_helper.cxx"
+"F:\repo\sock\socket\xsocket\xsock_core.cxx"
+"F:\repo\sock\socket\common\simple_posix_thread.cxx"
+"F:\repo\sock\socket\xsocket\xsock_server.cxx"
+"F:\repo\sock\socket\xsocket\xsock.cxx"
+"F:\repo\sock\socket\xsocket\xsock_server_accept_routine.cxx"
+"F:\repo\sock\socket\xsocket\xsock_server_core.cxx"
+"F:\repo\sock\socket\test\xwin\main.cxx"
+"F:\repo\sock\socket\common\net\is_ipv4_str.c"
+"F:\repo\sock\socket\common\net\simple_net_conv.c"
 ]
-Creating command line "cl.exe @C:\Users\yuiwong\AppData\Local\Temp\RSP5874.tmp" 
-Creating temporary file "C:\Users\yuiwong\AppData\Local\Temp\RSP5875.tmp" with contents
+Creating command line "cl.exe @C:\Users\w\AppData\Local\Temp\RSP7FDB.tmp" 
+Creating temporary file "C:\Users\w\AppData\Local\Temp\RSP7FE6.tmp" with contents
 [
 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/wsock_console_demo.pdb" /debug /machine:I386 /out:"Debug/wsock_console_demo.exe" /pdbtype:sept 
-.\Debug\main.obj
-.\Debug\PosixXSimpleThread.obj
-.\Debug\sock.obj
-.\Debug\sock_util.obj
-.\Debug\XSock.obj
-.\Debug\XSockServer.obj
-.\Debug\XSockServerAcceptRoutine.obj
-.\Debug\XSockServerHelper.obj
 .\Debug\c_logfile.obj
-.\Debug\timezone_util.obj
-.\Debug\timestamp.obj
 .\Debug\gettimeofday.obj
+.\Debug\timestamp.obj
+.\Debug\timezone_util.obj
+.\Debug\xsock_server_helper.obj
+.\Debug\xsock_core.obj
+.\Debug\simple_posix_thread.obj
+.\Debug\xsock_server.obj
+.\Debug\xsock.obj
+.\Debug\xsock_server_accept_routine.obj
+.\Debug\xsock_server_core.obj
+.\Debug\main.obj
+.\Debug\is_ipv4_str.obj
+.\Debug\simple_net_conv.obj
 ]
-Creating command line "link.exe @C:\Users\yuiwong\AppData\Local\Temp\RSP5875.tmp"
+Creating command line "link.exe @C:\Users\w\AppData\Local\Temp\RSP7FE6.tmp"
 <h3>Output Window</h3>
 Compiling...
-main.cxx
-PosixXSimpleThread.cxx
-sock.c
-sock_util.c
-XSock.cxx
-XSockServer.cxx
-XSockServerAcceptRoutine.cxx
-XSockServerHelper.cxx
 c_logfile.c
-timezone_util.c
-timestamp.c
 gettimeofday.c
+timestamp.c
+timezone_util.c
+xsock_server_helper.cxx
+xsock_core.cxx
+simple_posix_thread.cxx
+xsock_server.cxx
+xsock.cxx
+xsock_server_accept_routine.cxx
+xsock_server_core.cxx
+main.cxx
+is_ipv4_str.c
+simple_net_conv.c
 Linking...
 
 

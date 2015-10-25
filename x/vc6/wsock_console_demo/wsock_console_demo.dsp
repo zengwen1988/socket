@@ -93,19 +93,19 @@ SOURCE=..\..\..\common\time\gettimeofday.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\common\net\is_ipv4_str.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\test\xwin\main.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\common\xthread\PosixXSimpleThread.cxx
+SOURCE=..\..\..\common\net\simple_net_conv.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\sock\sock.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\sock\sock_util.c
+SOURCE=..\..\..\common\simple_posix_thread.cxx
 # End Source File
 # Begin Source File
 
@@ -117,19 +117,27 @@ SOURCE=..\..\..\common\time\timezone_util.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\xsock\XSock.cxx
+SOURCE=..\..\..\xsocket\xsock.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\xsock\XSockServer.cxx
+SOURCE=..\..\..\xsocket\xsock_core.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\xsock\XSockServerAcceptRoutine.cxx
+SOURCE=..\..\..\xsocket\xsock_server.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\xsock\XSockServerHelper.cxx
+SOURCE=..\..\..\xsocket\xsock_server_accept_routine.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\xsocket\xsock_server_core.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\xsocket\xsock_server_helper.cxx
 # End Source File
 # End Group
 # Begin Group "Header Files"
