@@ -1,14 +1,14 @@
 #include <SimpleTimer.h>
-#include "GSSockHelper.h"
+#include "gs_sock_helper.hxx"
 
 #include <c_logfile.h> /* log */
 
-#include "MyOnSocket.h"
+#include "my_on_socket.hxx"
 
 
 MyOnSocket::MyOnSocket ()
 {
-	this->sockfd = -1;
+	this->_sockfd = -1;
 }
 
 
@@ -19,7 +19,7 @@ static int __reconnect (uint64_t, int, void *)
 }
 
 /* override */
-int MyOnSocket::onConnect (sock_on_conn_t sc)
+int MyOnSocket::onConnect(const xsocket::SockOnConnnect& sc)
 {
 
 	char dmsg[256];
@@ -29,7 +29,7 @@ int MyOnSocket::onConnect (sock_on_conn_t sc)
 	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
 
 	if (sc.code >= 0) {
-		this->sockfd = sc.sockfd;
+		this->set_sockfd(sc.sockfd);
 	} else {
 		SimpleTimerHelper::startTimer(30 * 1e3, __reconnect, NULL);
 	}
@@ -41,7 +41,7 @@ int MyOnSocket::onConnect (sock_on_conn_t sc)
 
 
 /* override */
-int MyOnSocket::willFinish (sock_will_finish_t fi)
+int MyOnSocket::willFinish(const xsocket::SockWillFinish& fi)
 {
 
 	char dmsg[256];
@@ -58,13 +58,13 @@ int MyOnSocket::willFinish (sock_will_finish_t fi)
 
 
 /* override */
-int MyOnSocket::onReceived (int sockfd, const uint8_t *, size_t sz)
+int MyOnSocket::onReceived(const xsocket::SockRecved rcv)
 {
 
 	char dmsg[256];
 
 	snprintf(dmsg, 256,
-		"recv: %zu from sockfd: %d", sz, sockfd);
+		"recv: %zu from sockfd: %d", rcv.count, rcv.fd_receiver);
 	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
 
 	return 0;

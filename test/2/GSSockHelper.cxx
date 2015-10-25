@@ -1,9 +1,12 @@
-#include <sock.h>
+#include <cstring>
+
+#include <xsocket/sock_core.hxx>
+
 #include <c_logfile.h>
 
-#include <SockClientHelper.hxx>
+#include <xsocket/sock_client_helper.hxx>
 
-#include "GSSockHelper.h"
+#include "gs_sock_helper.hxx"
 
 
 int GSSockHelper::connectToServer (void)
@@ -13,7 +16,7 @@ int GSSockHelper::connectToServer (void)
 
 	GSSockHelper::disconnect();
 
-	GSSockHelper::sock_status = SOCK_STATUS_CONNECTING;
+	GSSockHelper::set_sock_status(xsocket::status::CONNECTING);
 
 	GSSockHelper::os = new MyOnSocket();
 	/*
@@ -26,14 +29,20 @@ int GSSockHelper::connectToServer (void)
 	// "192.168.0.112", 5577, 15, os);
 	// new XSockStartConnParamsD("192.168.0.112", 5577,
 	// new XSockStartConnParamsD("183.237.232.202", 60005,
+	/*
 	GSSockHelper::ps =
 		new XSockStartConnParamsD("192.168.0.119", 12345,
 		15, GSSockHelper::os);
+	*/
 
-	int ret = XSockClientHelper::startConnectByDomain(
-		GSSockHelper::ps);
+	xsocket::NetProtocol host;
+	strcpy(host.ip, "192.168.1.104");
+	host.is_ipv6 = false;
+	host.port = 12345;
+	int ret = xsocket::SockClientHelper::startConnectByHost(host, 15, os);
 	if (0 != ret) {
-		GSSockHelper::sock_status = SOCK_STATUS_UNKNOWN;
+		clogf_append_v2("startConnectByHost fail", __FILE__, __LINE__, ret);
+		GSSockHelper::set_sock_status(xsocket::status::UNKNOWN);
 	}
 
 	return ret;
@@ -48,22 +57,17 @@ int GSSockHelper::disconnect ()
 
 	clogf_append_v2("GSSockHelper::disconnect", __FILE__, __LINE__, 0);
 
-	GSSockHelper::sock_status = SOCK_STATUS_DISCONNECTING;
+	GSSockHelper::set_sock_status(xsocket::status::DISCONNECTING);
 
 	if (NULL != GSSockHelper::os) {
-		int fd = GSSockHelper::os->getSockfd();
+		int fd = GSSockHelper::os->sockfd();
 		if (fd >= 0) {
-			shutdown_socket(fd, SDH_SHUT_RDWR);
-			ret = close_socket(fd);
+			xsocket::core::ShutdownSocket(fd, xsocket::ShutdownHow::RDWR);
+			ret = xsocket::core::CloseSocket(fd);
 		}
 
 		delete GSSockHelper::os;
 		GSSockHelper::os = NULL;
-	}
-
-	if (NULL != GSSockHelper::ps) {
-		delete GSSockHelper::ps;
-		GSSockHelper::ps = NULL;
 	}
 
 	return ret;
@@ -71,6 +75,5 @@ int GSSockHelper::disconnect ()
 }
 
 
-XSockStartConnParamsD * GSSockHelper::ps = NULL;
 MyOnSocket * GSSockHelper::os = NULL;
-socket_status_t GSSockHelper::sock_status = SOCK_STATUS_UNKNOWN;
+xsocket::status::Type GSSockHelper::_sock_status = xsocket::status::UNKNOWN;
