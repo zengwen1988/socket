@@ -20,13 +20,17 @@ DEFINES += "ENABLE_SOCK_DEBUG=1"
 SOURCES += ../../../common/c_logfile.c
 SOURCES += ../../../common/time/timestamp.c
 SOURCES += ../../../common/time/timezone_util.c
-SOURCES += ../../../sock/sock.c
-SOURCES += ../../../sock/sock_util.c
+SOURCES += ../../../common/net/is_ipv4_str.c
+SOURCES += ../../../common/net/simple_net_conv.c
+#
+SOURCES += ../../../common/simple_posix_thread.cxx
+#
+SOURCES += ../../../xsocket/xsock_core.cxx
+SOURCES += ../../../xsocket/xsock.cxx
 # client only
-SOURCES += ../../../xsock/XSockClientUtil.cxx
-SOURCES += ../../../xsock/XOnClientSocket.cxx
-SOURCES += ../../../xsock/XSockParams.cxx
-SOURCES += ../../../xsock/XSockClientHelper.cxx
+SOURCES += ../../../xsocket/xsock_client_core.cxx
+SOURCES += ../../../xsocket/xsock_client_params.cxx
+SOURCES += ../../../xsocket/xsock_client_helper.cxx
 
 SOURCES += ../../../test/2/random.c
 SOURCES += ../../../test/2/timer/SimpleTimer.cxx
