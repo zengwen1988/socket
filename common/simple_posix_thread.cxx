@@ -1,1 +1,1 @@
-/home/repo/thread/simple_posix_thread.cxx
+/repo/thread/simple_posix_thread.cxx

@@ -1,1 +1,1 @@
-/home/repo/c-time-util/posix/gettimeofday.c
+/repo/c-time-util/posix/gettimeofday.c

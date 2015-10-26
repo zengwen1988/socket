@@ -1,1 +1,1 @@
-/home/repo/c-time-util/timestamp.c
+/repo/c-time-util/timestamp.c

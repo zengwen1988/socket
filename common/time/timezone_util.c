@@ -1,1 +1,1 @@
-/home/repo/c-time-util/timezone_util.c
+/repo/c-time-util/timezone_util.c
