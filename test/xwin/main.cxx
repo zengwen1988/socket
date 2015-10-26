@@ -6,6 +6,10 @@
 #include <timestamp.h>
 #include <c_logfile.h>
 
+#if defined(WIN32)
+#	include <posix/func.hxx>
+#endif
+
 class MyXOnServerSocket: public xsocket::OnServerSocket {
 /* override this */
 public: virtual int onConnected(int, int, const xsocket::NetProtocol&)
@@ -32,13 +36,15 @@ public: virtual bool shouldTeminate(int) {
 int main (void)
 {
 
-	MyXOnServerSocket ss;
-
 	char lof[1024];
 	bzero(lof, 1024);
 
 	timestampname_d(lof, "gsserverr.", ".log");
 	clogf_update(lof);
+
+	clogf_append_v2(__func__, __FILE__, __LINE__, 0);
+
+	MyXOnServerSocket ss;
 
 	xsocket::NetProtocol bindto;
 	strcpy(bindto.ip, "0.0.0.0");

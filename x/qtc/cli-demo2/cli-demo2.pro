@@ -26,7 +26,6 @@ SOURCES += ../../../common/net/simple_net_conv.c
 SOURCES += ../../../common/simple_posix_thread.cxx
 #
 SOURCES += ../../../xsocket/xsock_core.cxx
-SOURCES += ../../../xsocket/xsock.cxx
 # client only
 SOURCES += ../../../xsocket/xsock_client_core.cxx
 SOURCES += ../../../xsocket/xsock_client_params.cxx

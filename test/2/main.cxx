@@ -5,7 +5,6 @@
 #include <random.h>
 
 #include <xsocket/basic_sock_type.hxx>
-#include <xsocket/sock.hxx>
 #include <xsocket/sock_core.hxx>
 
 #include "my_on_socket.hxx"

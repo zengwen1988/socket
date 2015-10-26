@@ -3,7 +3,7 @@
 #include <xsocket/sock_core.hxx>
 
 #include <xsocket/on_server_socket.hxx>
-#include <xsocket/sock_server.hxx>
+// #include <xsocket/sock_server.hxx>
 #include <xsocket/sock_server_accept_routine.hxx>
 
 #if !defined(WIN32)
@@ -23,8 +23,13 @@ int xsocket::SockServerHelper::startServer (
 {
 
 	int ret;
-	xsocket::SockServer * sv = NULL;
-	xsocket::core::internal::SockServerAcceptRoutine * acc = NULL;
+	/* xsocket::SockServer * sv = NULL; */
+
+#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+	/* trace */ char dmsg[128];
+	snprintf(dmsg, 127, "func: %s", __func__); dmsg[127] = '\0';
+	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+#endif
 
 	if (NULL == server_callback) {
 		return -1;/* invalid */
@@ -71,13 +76,11 @@ int xsocket::SockServerHelper::startServer (
 		goto listen_fail;
 	}
 
+	/* set fd before start */
+	server_callback->set_sockfd(sockfd);
+
 	/* start accept thread */
-	sv = new xsocket::SockServer(sockfd, addr, server_callback);
-
-	/* if started success acc will be auto release !! */
-	acc = new xsocket::core::internal::SockServerAcceptRoutine(sv);
-
-	ret = acc->start();
+	ret = server_callback->startAccept();
 
 	if (0 != ret) {
 		ret = -6;
@@ -88,14 +91,9 @@ int xsocket::SockServerHelper::startServer (
 	return  0;
 
 start_accept_fail:
-	if (NULL != acc) {
-		delete acc;
-		acc = NULL;
-	}
-
-	if (NULL != sv) {
-		delete sv;
-		sv = NULL;
+	if (NULL != server_callback) {
+		delete server_callback;
+		server_callback = NULL;
 	}
 
 listen_fail:

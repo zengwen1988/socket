@@ -107,6 +107,8 @@ namespace error { enum Type {
 	SOCKARG_INVAL, /* socket argument invalid */
 	SOCKARG_CB_INVAL, /* socket argument callback invalid */
 	START_CONN_THREAD_FAIL,
+	/* server */
+	NO_SERVER,
 }; }
 
 namespace status { enum Type {

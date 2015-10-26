@@ -36,7 +36,8 @@ int GSSockHelper::connectToServer (void)
 	*/
 
 	xsocket::NetProtocol host;
-	strcpy(host.ip, "192.168.1.104");
+	// strcpy(host.ip, "127.0.0.1");
+	strcpy(host.ip, "192.168.0.119");
 	host.is_ipv6 = false;
 	host.port = 12345;
 	int ret = xsocket::SockClientHelper::startConnectByHost(host, 15, os);
