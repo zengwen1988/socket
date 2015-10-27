@@ -117,15 +117,11 @@ SOURCE=..\..\..\common\time\timezone_util.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\xsocket\xsock.cxx
+SOURCE=..\..\..\xsocket\xon_server_socket.cxx
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\xsocket\xsock_core.cxx
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\xsocket\xsock_server.cxx
 # End Source File
 # Begin Source File
 

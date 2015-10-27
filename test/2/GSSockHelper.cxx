@@ -2,7 +2,7 @@
 
 #include <xsocket/sock_core.hxx>
 
-#include <c_logfile.h>
+#include <x_logfile.hxx>
 
 #include <xsocket/sock_client_helper.hxx>
 
@@ -12,7 +12,7 @@
 int GSSockHelper::connectToServer (void)
 {
 
-	clogf_append_v2("GSSockHelper::connectToServer", __FILE__, __LINE__, 0);
+	xlog::AppendV2("GSSockHelper::connectToServer", __FILE__, __LINE__, 0);
 
 	GSSockHelper::disconnect();
 
@@ -42,7 +42,7 @@ int GSSockHelper::connectToServer (void)
 	host.port = 12345;
 	int ret = xsocket::SockClientHelper::startConnectByHost(host, 15, os);
 	if (0 != ret) {
-		clogf_append_v2("startConnectByHost fail", __FILE__, __LINE__, ret);
+		xlog::AppendV2("startConnectByHost fail", __FILE__, __LINE__, ret);
 		GSSockHelper::set_sock_status(xsocket::status::UNKNOWN);
 	}
 
@@ -56,7 +56,7 @@ int GSSockHelper::disconnect ()
 
 	int ret = 0;
 
-	clogf_append_v2("GSSockHelper::disconnect", __FILE__, __LINE__, 0);
+	xlog::AppendV2("GSSockHelper::disconnect", __FILE__, __LINE__, 0);
 
 	GSSockHelper::set_sock_status(xsocket::status::DISCONNECTING);
 

@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#include <c_logfile.h>
+#include <x_logfile.hxx>
 #include <random.h>
 
 #include <xsocket/basic_sock_type.hxx>
@@ -20,7 +20,7 @@ int main (int, char * [])
 	int ret;
 	uint32_t rd;
 
-	clogf_update("cli2.log");
+	xlog::Update("cli2.log");
 
 	ret = GSSockHelper::connectToServer();
 
@@ -32,7 +32,7 @@ int main (int, char * [])
 	if (xsocket::status::CONNECTED == GSSockHelper::sock_status()) {
 		fd = GSSockHelper::on_sock()->sockfd();
 
-		clogf_append_v2("main", __FILE__, __LINE__, 0);
+		xlog::AppendV2("main", __FILE__, __LINE__, 0);
 
 		while (true) {
 			for (i = 0; i < 1024; ++i) {
@@ -41,16 +41,16 @@ int main (int, char * [])
 			}
 
 			ret = xsocket::core::SendData(fd, (const uint8_t *)buf, 0, 4096);
-			clogf_append_v2("send_data", __FILE__, __LINE__, ret);
+			xlog::AppendV2("send_data", __FILE__, __LINE__, ret);
 
 			if (ret < 0) {
-				clogf_append_v2("send_data fail", __FILE__, __LINE__, ret);
+				xlog::AppendV2("send_data fail", __FILE__, __LINE__, ret);
 				break;
 			}
 			usleep(5 * 1e6);
 		}
 	} else {
-		clogf_append_v2("connect fail", __FILE__, __LINE__, -1);
+		xlog::AppendV2("connect fail", __FILE__, __LINE__, -1);
 	}
 
 	return 0;

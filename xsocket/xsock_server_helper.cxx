@@ -2,8 +2,6 @@
 
 #include <xsocket/sock_core.hxx>
 
-#include <xsocket/on_server_socket.hxx>
-// #include <xsocket/sock_server.hxx>
 #include <xsocket/sock_server_accept_routine.hxx>
 
 #if !defined(WIN32)
@@ -13,26 +11,42 @@
 #else
 #endif
 
-#if !defined(NO_C_LOGFILE)
-#	include <c_logfile.h>
+#if !defined(NO_X_LOGFILE)
+#	include <x_logfile.hxx>
 #endif
 
+/*
+ * if fail please release callbacks
+ * if success DO-NOT release callbacks
+ */
 int xsocket::SockServerHelper::startServer (
 	const xsocket::NetProtocol& bindto,
-	xsocket::OnServerSocket * server_callback)
+	xsocket::OnServerSocket * server_callback,
+	xsocket::OnSession * session_callback)
 {
 
 	int ret;
-	/* xsocket::SockServer * sv = NULL; */
 
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	/* trace */ char dmsg[128];
 	snprintf(dmsg, 127, "func: %s", __func__); dmsg[127] = '\0';
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 #endif
 
 	if (NULL == server_callback) {
-		return -1;/* invalid */
+		ret = -xsocket::error::NO_SERVER_CB;
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("null server callback", __FILE__, __LINE__, ret);
+#endif
+		return ret;
+	}
+
+	if (NULL == session_callback) {
+		ret = -xsocket::error::NO_SERVER_CB;
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("null session callback", __FILE__, __LINE__, ret);
+#endif
+		return ret;
 	}
 
 #if	0
@@ -46,7 +60,12 @@ int xsocket::SockServerHelper::startServer (
 	ret = xsocket::core::InitSocketEnvironment();
 
 	if (0 != ret) {
-		return -2;/* load winsocket dll fail */
+		ret = -xsocket::error::SOCK_INIT_FAIL;
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("xsocket::core::InitSocketEnvironment fail",
+			__FILE__, __LINE__, ret);
+#endif
+		return -ret;
 	}
 
 	sockaddr_in addr;
@@ -58,46 +77,48 @@ int xsocket::SockServerHelper::startServer (
 	int sockfd = socket(AF_INET /* PF_INET */, SOCK_STREAM, 0);
 
 	if (sockfd < 0) {
-		clogf_append_v2("socket fail", __FILE__, __LINE__, sockfd);
-		return -3;/* create socket fail */
+		ret = -errno;
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("socket fail", __FILE__, __LINE__, ret);
+#endif
+		return ret;/* create socket fail */
 	}
 
 	ret = bind(sockfd, (const sockaddr *)&addr, sizeof(sockaddr_in));
 
 	if (ret < 0) {
-		ret = -4;
+		ret = -errno;
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("bind fail", __FILE__, __LINE__, ret);
+#endif
 		goto bind_fail;
 	}
 
 	ret = listen(sockfd, 10);
 
 	if (ret < 0) {
-		ret = -5;
+		ret = -errno;
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("lsiten fail", __FILE__, __LINE__, ret);
+#endif
 		goto listen_fail;
 	}
 
 	/* set fd before start */
 	server_callback->set_sockfd(sockfd);
+	server_callback->set_on_session(session_callback);
 
 	/* start accept thread */
 	ret = server_callback->startAccept();
 
 	if (0 != ret) {
-		ret = -6;
 		goto start_accept_fail;
 	}
 
-	/* return sockfd; */
-	return  0;
+	return  0;/* success */
 
 start_accept_fail:
-	if (NULL != server_callback) {
-		delete server_callback;
-		server_callback = NULL;
-	}
-
 listen_fail:
-
 bind_fail:
 	xsocket::core::ShutdownSocket(sockfd, xsocket::ShutdownHow::RDWR);
 	xsocket::core::CloseSocket(sockfd);

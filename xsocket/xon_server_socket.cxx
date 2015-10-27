@@ -42,7 +42,7 @@
 
 #include <xsocket/on_server_socket.hxx>
 
-#if !defined(NO_C_LOGFILE)
+#if !defined(NO_X_LOGFILE)
 #	include <c_logfile.h>
 #endif
 
@@ -52,11 +52,11 @@ xsocket::OnServerSocket::OnServerSocket (void)
 {
 	++OnServerSocket::instance_num;
 
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	char dmsg[128];
 	snprintf(dmsg, 127, "func: %s: in: %zu", __func__,
 		OnServerSocket::instance_num);
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 #endif
 	this->_accept_routine
 		= new xsocket::core::internal::SockServerAcceptRoutine();
@@ -65,12 +65,12 @@ xsocket::OnServerSocket::OnServerSocket (void)
 
 xsocket::OnServerSocket::~OnServerSocket ()
 {
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	char dmsg[128];
 	snprintf(dmsg, 127, "func: %s: in-will: %zu", __func__,
 		OnServerSocket::instance_num - 1);
 	dmsg[127] = '\0';
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 #endif
 
 	if (NULL != this->_accept_routine) {
@@ -83,10 +83,10 @@ xsocket::OnServerSocket::~OnServerSocket ()
 
 bool xsocket::OnServerSocket::acceptPrepare (void)
 {
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	/* trace */ char dmsg[128];
 	snprintf(dmsg, 127, "func: %s", __func__); dmsg[127] = '\0';
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 #endif
 
 	if (NULL == this->_accept_routine) {
@@ -100,10 +100,10 @@ bool xsocket::OnServerSocket::acceptPrepare (void)
 
 int xsocket::OnServerSocket::startAccept (void)
 {
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	/* trace */ char dmsg[128];
 	snprintf(dmsg, 127, "func: %s", __func__); dmsg[127] = '\0';
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 #endif
 
 	if (NULL == this->_accept_routine) {

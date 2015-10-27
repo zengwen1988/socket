@@ -55,8 +55,8 @@
 #include <sys/stat.h>
 #include <netdb.h> /* gethostbyname */
 
-#if !defined(NO_C_LOGFILE)
-#	include <c_logfile.h>
+#if !defined(NO_X_LOGFILE)
+#	include <x_logfile.hxx>
 #endif
 
 /*
@@ -97,7 +97,7 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 	if (NULL == on_socket) {
 		delete cps;
 		cps = NULL;
-		return (void *)-xsocket::error::SOCKARG_CB_INVAL;
+		return (void *)-xsocket::error::NO_CLIENT_CB;
 	}
 
 	/* real dump*/
@@ -121,7 +121,9 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 	if (ret < 0) {
 		ret = errno;
 
-		clogf_append_v2("select writable fail", __FILE__, __LINE__, -ret);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("select writable fail", __FILE__, __LINE__, -ret);
+#endif
 
 		code = -ret;
 		goto select_fail;
@@ -129,7 +131,9 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 		/* timeout */
 		code = -ETIMEDOUT;
 
-		clogf_append_v2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
+#endif
 
 		goto select_to;
 	} else {
@@ -142,7 +146,9 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 			/* connect fail */
 			errno = ret;
 			code = -ret;
-			clogf_append_v2("select fail", __FILE__, __LINE__, code);
+#if			!defined(NO_X_LOGFILE)
+			xlog::AppendV2("select fail", __FILE__, __LINE__, code);
+#endif
 
 			goto select_fail;
 		}
@@ -162,8 +168,10 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 	/* start on received thread */
 	ret = xsocket::core::ClientHelper::startReceiveFromPeer(rcvparams);
 	if (0 != ret) {
-		clogf_append_v2("start_receive_from_peer fail", __FILE__, __LINE__,
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("start_receive_from_peer fail", __FILE__, __LINE__,
 			ret);
+#endif
 		code = ret;
 		delete rcvparams;
 		rcvparams = NULL;
@@ -182,7 +190,9 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 		on_socket = NULL;
 	}
 
-	clogf_append_v2("end success", __FILE__, __LINE__, ret);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2("end success", __FILE__, __LINE__, ret);
+#endif
 
 	/* final delete */
 	if (NULL != cps) {
@@ -302,7 +312,9 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 	if (ret < 0) {
 		ret = errno;
 
-		clogf_append_v2("select writable fail", __FILE__, __LINE__, -ret);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("select writable fail", __FILE__, __LINE__, -ret);
+#endif
 
 		code = errno;
 		goto select_fail;
@@ -310,7 +322,9 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 		/* timeout */
 		code = ETIMEDOUT;
 
-		clogf_append_v2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
+#endif
 
 		goto select_to;
 	} else {
@@ -323,7 +337,9 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 			/* connect fail */
 			errno = ret;
 			code = -ret;
-			clogf_append_v2("select fail", __FILE__, __LINE__, code);
+#if			!defined(NO_X_LOGFILE)
+			xlog::AppendV2("select fail", __FILE__, __LINE__, code);
+#endif
 
 			goto select_fail;
 		}
@@ -350,8 +366,10 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 	/* start on received thread */
 	ret = XSockClientUtil::startReceiveFromPeer(rcvparams);
 	if (0 != ret) {
-		clogf_append_v2("start_receive_from_peer fail", __FILE__, __LINE__,
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("start_receive_from_peer fail", __FILE__, __LINE__,
 			ret);
+#endif
 		code = ret;
 		delete rcvparams;
 		rcvparams = NULL;
@@ -368,7 +386,9 @@ void * XSockClientUtil::connectByDomain (XSockConnParamsDomain * domain)
 	cparams.sockfd = sockfd;
 	onSocket->onConnect(cparams);
 
-	clogf_append_v2("end success", __FILE__, __LINE__, ret);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2("end success", __FILE__, __LINE__, ret);
+#endif
 
 	return (void *)0;/* success */
 
@@ -386,15 +406,21 @@ select_fail:
 	return (void *)-1;
 
 getsockfd_fail:
-	clogf_append_v2("get sock fd fail", __FILE__, __LINE__, -1);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2("get sock fd fail", __FILE__, __LINE__, -1);
+#endif
 	goto fail;
 
 gethosttypefail:
-	clogf_append_v2("unsupport type", __FILE__, __LINE__, -2);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2("unsupport type", __FILE__, __LINE__, -2);
+#endif
 	goto fail;
 
 gethostfail:
-	clogf_append_v2("parse dns fail", __FILE__, __LINE__, -3);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2("parse dns fail", __FILE__, __LINE__, -3);
+#endif
 
 fail:
 	cparams.code = -1;
@@ -421,13 +447,17 @@ int XSockClientUtil::startConnectByDomain (const XSockStartConnParamsD * ps)
 	if ((NULL == ps)
 		|| (NULL == ps->getOnSocket())
 		|| (strlen(ps->getDomain()) <= 0)) {
-		clogf_append_v2("invalid domain or params", __FILE__, __LINE__,
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("invalid domain or params", __FILE__, __LINE__,
 			-EINVAL);
+#endif
 		return -EINVAL;
 	}
 
 	if (NULL == ps->getOnSocket()) {
-		clogf_append_v2("invalid callback", __FILE__, __LINE__, -EINVAL);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("invalid callback", __FILE__, __LINE__, -EINVAL);
+#endif
 		return -EINVAL;
 	}
 
@@ -444,7 +474,9 @@ int XSockClientUtil::startConnectByDomain (const XSockStartConnParamsD * ps)
 
 	if (0 != ret) {
 		errno = ret;
-		clogf_append_v2("start connect 2 fail", __FILE__, __LINE__, -ret);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("start connect 2 fail", __FILE__, __LINE__, -ret);
+#endif
 
 		delete domainps;
 		domainps = NULL;
@@ -465,7 +497,9 @@ sconnfail:
 	snprintf(dmsg, 255,
 		"tid: %lu end fail", (unsigned long)tid);
 	dmsg[255] = 0;
-	clogf_append_v2(dmsg, __FILE__, __LINE__, -ret);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, -ret);
+#endif
 	return -ret;/* fail */
 
 }
@@ -494,8 +528,10 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 	char dmsg[256];
 
 	if (NULL == params) {
-		clogf_append_v2("ERRO: NULL XSockReceiveParams params !!", __FILE__,
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("ERRO: NULL XSockReceiveParams params !!", __FILE__,
 			__LINE__, -EINVAL);
+#endif
 		return (void *)-EINVAL;
 	}
 
@@ -515,7 +551,9 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 	params = NULL;
 
 	if (0 == tid) {
-		clogf_append_v2("ERRO: 0 tid !!", __FILE__, __LINE__, -EINVAL);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("ERRO: 0 tid !!", __FILE__, __LINE__, -EINVAL);
+#endif
 		return (void *)-EINVAL;
 	}
 
@@ -541,14 +579,18 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 		ret = recv_from_sockfd(sockfd, buf, 0, 4096, 15 * 1e6, 15 * 1e6);
 
 		if ((ret < 0) && (ret > -1000)) {
-			clogf_append_v2("FAIL: will finish", __FILE__, __LINE__, ret);
+#if			!defined(NO_X_LOGFILE)
+			xlog::AppendV2("FAIL: will finish", __FILE__, __LINE__, ret);
+#endif
 			fiparams.code = ret;/* fail */
 			onSocket->willFinish(fiparams);
 			return NULL;
 		} else if (0 == ret) {
 			/* disconnected */
-			clogf_append_v2("will finish: peer disconnected", __FILE__,
+#if			!defined(NO_X_LOGFILE)
+			xlog::AppendV2("will finish: peer disconnected", __FILE__,
 				__LINE__, 0);
+#endif
 			fiparams.code = 0;
 			onSocket->willFinish(fiparams);
 			return NULL;
@@ -563,7 +605,9 @@ void * XSockClientUtil::receiveRoutine (XSockReceiveParams * params)
 		teminate = onSocket->shouldTeminateRecv(sockfd);
 	}
 
-	clogf_append_v2("will finish: user terminate", __FILE__, __LINE__, 1);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2("will finish: user terminate", __FILE__, __LINE__, 1);
+#endif
 	fiparams.code = 1;/* user terminate */
 	onSocket->willFinish(fiparams);
 
@@ -588,7 +632,9 @@ int XSockClientUtil::startReceiveFromPeer (XSockReceiveParams * params)
 	if (0 != ret) {
 		errno = ret;
 
-		clogf_append_v2("start receive fail", __FILE__, __LINE__, -ret);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("start receive fail", __FILE__, __LINE__, -ret);
+#endif
 
 		return -ret;
 	} else {
@@ -628,7 +674,9 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	char dmsg[256];
 
 	if (NULL == params) {
-		clogf_append_v2("null params", __FILE__, __LINE__, -EINVAL);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("null params", __FILE__, __LINE__, -EINVAL);
+#endif
 		return (void *)-EINVAL;
 	}
 
@@ -661,14 +709,18 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	if (ret < 0) {
 		ret = errno;
 
-		clogf_append_v2("select writable fail", __FILE__, __LINE__, -ret);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("select writable fail", __FILE__, __LINE__, -ret);
+#endif
 
 		goto select_fail;
 	} else if (0 == ret) {
 		/* timeout */
 		ret = ETIMEDOUT;
 
-		clogf_append_v2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
+#endif
 
 		goto select_to;
 	} else {
@@ -679,7 +731,9 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 
 		if (0 != ret) {
 			/* connect fail */
-			clogf_append_v2("select fail", __FILE__, __LINE__, -ret);
+#if			!defined(NO_X_LOGFILE)
+			xlog::AppendV2("select fail", __FILE__, __LINE__, -ret);
+#endif
 
 			goto select_fail;
 		}
@@ -706,8 +760,10 @@ void * XSockClientUtil::connectBySockfd (XSockConnParams * params)
 	/* start on received thread */
 	ret = XSockClientUtil::startReceiveFromPeer(rcvparams);
 	if (0 != ret) {
-		clogf_append_v2("start_receive_from_peer fail", __FILE__, __LINE__,
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("start_receive_from_peer fail", __FILE__, __LINE__,
 			ret);
+#endif
 		code = 1;
 		delete rcvparams;
 		rcvparams = NULL;
@@ -742,7 +798,9 @@ select_fail:
 	snprintf(dmsg, 255,
 		"tid: %lu end fail", (unsigned long)tid);
 	dmsg[255] = 0;
-	clogf_append_v2(dmsg, __FILE__, __LINE__, -1);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, -1);
+#endif
 
 	return (void *)-1;/* fail */
 
@@ -856,8 +914,10 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 	xsocket::SockRecved rcv;
 
 	if (NULL == arg) {
-		clogf_append_v2("ERRO: NULL XSockReceiveParams params !!", __FILE__,
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("ERRO: NULL XSockReceiveParams params !!", __FILE__,
 			__LINE__, -EINVAL);
+#endif
 		return (void *)-xsocket::error::SOCKARG_INVAL;
 	}
 
@@ -885,15 +945,19 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 			sockfd, buf, 0, 4096, 15 * 1e6, 15 * 1e6);
 
 		if ((ret < 0) && (ret > -1000)) {
-			clogf_append_v2("FAIL: will finish", __FILE__, __LINE__, ret);
+#if			!defined(NO_X_LOGFILE)
+			xlog::AppendV2("FAIL: will finish", __FILE__, __LINE__, ret);
+#endif
 			fb.code = ret;/* fail */
 			on_socket->willFinish(fb);
 
 			goto end;
 		} else if (0 == ret) {
 			/* disconnected */
-			clogf_append_v2("will finish: peer disconnected", __FILE__,
+#if			!defined(NO_X_LOGFILE)
+			xlog::AppendV2("will finish: peer disconnected", __FILE__,
 				__LINE__, 0);
+#endif
 			fb.code = 0;
 			on_socket->willFinish(fb);
 			goto end;
@@ -910,7 +974,9 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 		teminate = on_socket->shouldTeminateRecv(sockfd);
 	}
 
-	clogf_append_v2("will finish: user terminate", __FILE__, __LINE__, 1);
+#if	!defined(NO_X_LOGFILE)
+	xlog::AppendV2("will finish: user terminate", __FILE__, __LINE__, 1);
+#endif
 	fb.code = 1;/* user terminate */
 	on_socket->willFinish(fb);
 

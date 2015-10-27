@@ -18,20 +18,20 @@
  * LICENSE
  *   GNU LESSER GENERAL PUBLIC LICENSE Version 3
  *
- *   This file is part of SOCKET.
- *   SOCKET
+ *   This file is part of XSOCKET.
+ *   XSOCKET
  *   is free software: you can redistribute it
  *   and/or modify it under the terms of the GNU General Public License as
  *   published by the Free Software Foundation, either version 3 of the
  *   License, or (at your option) any later version.
- *   SOCKET
+ *   XSOCKET
  *   is distributed in the hope that it will be
  *   useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License along
- *   with SOCKET.
+ *   with XSOCKET.
  *   If not, see <http://www.gnu.org/licenses/>.
  *
  * ==========================================================================
@@ -104,11 +104,14 @@ namespace xsocket {
 namespace error { enum Type {
 	SUCCESS = 0,
 	SOCKFD_INVAL = 10000, /* invalid socket fd */
+	NO_CLIENT_CB, /* no client callback */
 	SOCKARG_INVAL, /* socket argument invalid */
-	SOCKARG_CB_INVAL, /* socket argument callback invalid */
 	START_CONN_THREAD_FAIL,
 	/* server */
 	NO_SERVER,
+	NO_SERVER_CB, /* no server callback */
+	/* WIN32 only */
+	SOCK_INIT_FAIL,
 }; }
 
 namespace status { enum Type {

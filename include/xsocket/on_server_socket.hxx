@@ -6,8 +6,12 @@
 /* class xsocket::core::internal::SockServerAcceptRoutine */
 namespace xsocket { namespace core { namespace internal {
 	class SockServerAcceptRoutine; } } }
+
 /* class xsocket::SockServerHelper */
 namespace xsocket { class SockServerHelper; }
+
+/* class xsocket::OnSession */
+namespace xsocket { class OnSession; }
 
 namespace xsocket {
 
@@ -18,16 +22,15 @@ namespace xsocket {
 class OnServerSocket {
 
 friend class xsocket::core::internal::SockServerAcceptRoutine;
-friend class xsocket::SockServerHelper;
+friend class xsocket::SockServerHelper;/* set_sockfd */
 
 public:
 	OnServerSocket(void);
 
 /*
- * 1 will be delete by callback when accept started success
- * 2 or will be delete by SockServerHelper when start accept fail when
- * passed to SockServerHelper !!!
- * 3 or sub-class
+ * 1 will be delete by callback (SockServerAcceptRoutine)
+ * when accept started success (when finish)
+ * 2 sub-class
  */
 protected:
 	virtual ~OnServerSocket();
@@ -44,14 +47,16 @@ protected:
 public:
 	virtual int onConnected(int, int, const xsocket::NetProtocol&) = 0;
 	virtual int willFinish(SockWillFinish) = 0;
-	virtual int onReceived(SockRecved) = 0;
 	virtual bool shouldTeminate(int sockfd) = 0;
 
 public:
 	inline int sockfd (void) { return this->_sockfd; }
+	inline xsocket::OnSession * on_session (void) { return this->_on_session; }
 
 protected:
 	inline void set_sockfd (int fd) { this->_sockfd = fd; }
+	inline void set_on_session (xsocket::OnSession * os) {
+		this->_on_session = os; }
 
 /* NOTE BETTER let xsocket::SockServerHelper start accept */
 protected:
@@ -68,6 +73,7 @@ private:
 private:
 	xsocket::core::internal::SockServerAcceptRoutine * _accept_routine;
 	int _sockfd;
+	xsocket::OnSession * _on_session;
 
 private:
 	static size_t instance_num;

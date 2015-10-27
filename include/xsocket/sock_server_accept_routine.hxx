@@ -66,7 +66,7 @@ protected:
 	virtual ~SockServerAcceptRoutine();
 
 protected:
-	virtual void * run(void * server);
+	virtual void * run(void * server_callback);
 
 private:
 	static size_t instance_num;

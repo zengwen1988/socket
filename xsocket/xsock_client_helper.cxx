@@ -43,8 +43,8 @@
 #include <pthread.h> /* pthread_create */
 #include <errno.h>
 
-#if !defined(NO_C_LOGFILE)
-#	include <c_logfile.h>
+#if !defined(NO_X_LOGFILE)
+#	include <x_logfile.hxx>
 #endif
 
 #include <xsocket/sock_core.hxx>
@@ -60,16 +60,16 @@ int xsocket::SockClientHelper::startConnectByHost (
 	int sockfd;
 	xsocket::SockStartConnParams * params = NULL;
 
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	clogf_append_v2("xsocket::SockClientHelper::startConnectByHost",
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+	xlog::AppendV2("xsocket::SockClientHelper::startConnectByHost",
 		__FILE__, __LINE__, 0);
 #endif
 
 	/* check */
 	if (NULL == on_socket) {
 		ret = -xsocket::error::SOCKARG_INVAL;
-#if 	!defined(NO_C_LOGFILE)
-		clogf_append_v2("no callback", __FILE__, __LINE__, ret);
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("no callback", __FILE__, __LINE__, ret);
 #endif
 		return ret;
 	}
@@ -89,12 +89,16 @@ int xsocket::SockClientHelper::startConnectByHost (
 	ret = xsocket::core::ClientHelper::startConnectBySockfd(sockfd, params);
 
 	if (0 != ret) {
-		clogf_append_v2("start connect 2 fail", __FILE__, __LINE__, ret);
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("start connect 2 fail", __FILE__, __LINE__, ret);
+#endif
 
 		goto conn2fail;
 	} else {
 		/* success */
-		clogf_append("start connect success");
+#if 	!defined(NO_X_LOGFILE)
+		xlog::Append("start connect success");
+#endif
 		return 0;
 	}
 

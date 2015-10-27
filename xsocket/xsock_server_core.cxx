@@ -39,8 +39,8 @@
 #include <errno.h> /* errno */
 #include <cstring>
 
-#if !defined(NO_C_LOGFILE)
-#	include <c_logfile.h>
+#if !defined(NO_X_LOGFILE)
+#	include <x_logfile.hxx>
 #endif
 
 

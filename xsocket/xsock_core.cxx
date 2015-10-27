@@ -48,8 +48,8 @@
 #include <fcntl.h> /* F_GETFL .. */
 
 
-#if !defined(NO_C_LOGFILE)
-#	include <c_logfile.h>
+#if !defined(NO_X_LOGFILE)
+#	include <x_logfile.hxx>
 #endif
 
 #include <simple_net_conv.h>
@@ -67,8 +67,8 @@ int xsocket::core::GetSockfdByHost (const xsocket::NetProtocol& host)
 	int sockfd;
 	uint32_t ipv4;
 
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	clogf_append_v2("xsocket::core::GetSockfdByHost", __FILE__, __LINE__,
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+	xlog::AppendV2("xsocket::core::GetSockfdByHost", __FILE__, __LINE__,
 		0);
 #endif
 
@@ -78,8 +78,8 @@ int xsocket::core::GetSockfdByHost (const xsocket::NetProtocol& host)
 	 */
 	ret = ipv4_to_netu32_r(&ipv4, host.ip);
 	if (0 != ret) {
-#if 	!defined(NO_C_LOGFILE)
-		clogf_append_v2("Invalid IPv4", __FILE__, __LINE__, ret);
+#if 	!defined(NO_X_LOGFILE)
+		xlog::AppendV2("Invalid IPv4", __FILE__, __LINE__, ret);
 #endif
 		return ret;
 	}
@@ -255,19 +255,17 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 	struct timeval timeout, timeout_r;
 	fd_set readfds;
 	int nfds, ret;
-#if defined(ENABLE_SOCK_DEBUG)
-	char dmsg[256];
-#endif
 
-#if defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+	char dmsg[256];
 	snprintf(dmsg, 255,
 		"fd: %d: buf: %p start: %d max: %zu", sockfd,
 		buf, start, max);
 	dmsg[255] = '\0';
-	clogf_append(dmsg);
+	xlog::Append(dmsg);
 	snprintf(dmsg, 255,
 		"wr_us: %u r_us: %u", wr_us, r_us);
-	clogf_append(dmsg);
+	xlog::Append(dmsg);
 #endif
 
 	/* set select timeout */
@@ -283,7 +281,9 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 	ret = select(nfds, &readfds, NULL, NULL, &timeout);
 	if (-1 == ret) {
 		/* error */
-		clogf_append_v2("select fail", __FILE__, __LINE__, -errno);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("select fail", __FILE__, __LINE__, -errno);
+#endif
 		ret = -1;
 		goto end;
 	} else if (0 == ret) {
@@ -333,15 +333,21 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 		&& (11 == errno)) {
 #endif
 		/* recv: EWOULDBLOCK */
-		clogf_append_v2("recv fail", __FILE__, __LINE__, -errno);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("recv fail", __FILE__, __LINE__, -errno);
+#endif
 		ret = -2;
 		goto end;
 	} else if (ret <0) {
-		clogf_append_v2("recv fail", __FILE__, __LINE__, -errno);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("recv fail", __FILE__, __LINE__, -errno);
+#endif
 		ret = -3;
 		goto end;
 	} else if (0 == ret) {
-		clogf_append_v2("peer disconnected", __FILE__, __LINE__, 1);
+#if		!defined(NO_X_LOGFILE)
+		xlog::AppendV2("peer disconnected", __FILE__, __LINE__, 1);
+#endif
 	}
 
 end:

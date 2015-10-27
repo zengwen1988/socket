@@ -55,13 +55,14 @@
 
 #include <posix/func/snprintf.h>
 
-#if !defined(NO_C_LOGFILE)
-#	include <c_logfile.h>
+#if !defined(NO_X_LOGFILE)
+#	include <x_logfile.hxx>
 #endif
 
 #include <xsocket/sock_core.hxx>
 #include <xsocket/sock_server_core.hxx>
 #include <xsocket/on_server_socket.hxx>
+#include <xsocket/on_session.hxx>
 
 void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 {
@@ -69,8 +70,8 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 	int ret;
 	char dmsg[256];
 
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	clogf_append_v2("xsocket::core::internal::SockServerAcceptRoutine::run",
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+	xlog::AppendV2("xsocket::core::internal::SockServerAcceptRoutine::run",
 		__FILE__, __LINE__, 0);
 #endif
 
@@ -78,12 +79,18 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 
 	if (NULL == server_callback) {
 		ret = -xsocket::error::NO_SERVER;
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-		clogf_append_v2("ERROR: no server",
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+		xlog::AppendV2("ERROR: no server",
 			__FILE__, __LINE__, ret);
 #endif
 		return (void *)ret;
 	}
+
+	xsocket::OnSession * session_callback = server_callback->on_session();
+	/* no possible
+	if (NULL == server_callback) {
+	}
+	*/
 
 	bool teminate;
 	int serverfd = server_callback->sockfd();
@@ -111,13 +118,14 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 				"server[%d]. got connection: [%d] %s:%u",
 				serverfd, ret, clientProt.ip, clientProt.port);
 			dmsg[255] = 0;
-			clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+			xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 
 			server_callback->onConnected(serverfd, ret, clientProt);
 
 			/*
 			 * TODO start recv thread
 			 */
+			session_callback->startSession();
 			/*
 			XSockServerCliSessionRoutine * clisess
 				= new XSockServerCliSessionRoutine();
@@ -164,19 +172,19 @@ xsocket::core::internal::SockServerAcceptRoutine::SockServerAcceptRoutine
 {
 	++SockServerAcceptRoutine::instance_num;
 
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	char dmsg[128];
 	snprintf(dmsg, 127,
 		"xsocket::core::internal::SockServerAcceptRoutine::SockServerAcceptRoutine: "
 		"in: %zu", SockServerAcceptRoutine::instance_num);
 	dmsg[127] = '\0';
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 #endif
 }
 
 xsocket::core::internal::SockServerAcceptRoutine::~SockServerAcceptRoutine ()
 {
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	int ret;
 	long int retval;
 	ret = this->nowFinish((void **)&retval);
@@ -184,14 +192,14 @@ xsocket::core::internal::SockServerAcceptRoutine::~SockServerAcceptRoutine ()
 	(void)this->nowFinish();
 #endif
 
-#if !defined(NO_C_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	char dmsg[128];
 	snprintf(dmsg, 127,
 		"xsocket::core::internal::SockServerAcceptRoutine::~SockServerAcceptRoutine: "
 		"in-will: %zu, ret: %d retval: %ld",
 		SockServerAcceptRoutine::instance_num - 1, ret, retval);
 	dmsg[127] = '\0';
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 #endif
 
 	--SockServerAcceptRoutine::instance_num;

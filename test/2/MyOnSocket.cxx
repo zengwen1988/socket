@@ -1,7 +1,7 @@
-#include <SimpleTimer.h>
+#include <xsimple_timer.hxx>
 #include "gs_sock_helper.hxx"
 
-#include <c_logfile.h> /* log */
+#include <x_logfile.hxx> /* log */
 
 #include "my_on_socket.hxx"
 
@@ -26,12 +26,12 @@ int MyOnSocket::onConnect(const xsocket::SockOnConnnect& sc)
 
 	snprintf(dmsg, 256, "code: %d sockfd: %d peer-ip: %s:%u", sc.code,
 		sc.sockfd, sc.info.ip, sc.info.port);
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 
 	if (sc.code >= 0) {
 		this->set_sockfd(sc.sockfd);
 	} else {
-		SimpleTimerHelper::startTimer(30 * 1e3, __reconnect, NULL);
+		xtimer::SimpleTimerHelper::startTimer(30 * 1e3, __reconnect, NULL);
 	}
 
 	return 0;
@@ -46,11 +46,12 @@ int MyOnSocket::willFinish(const xsocket::SockWillFinish& fi)
 
 	char dmsg[256];
 
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"code: %d sockfd: %d", fi.code, fi.sockfd);
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	dmsg[255] = '\0';
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 
-	SimpleTimerHelper::startTimer(10 * 1e3, __reconnect, NULL);
+	xtimer::SimpleTimerHelper::startTimer(10 * 1e3, __reconnect, NULL);
 
 	return 0;
 
@@ -63,9 +64,10 @@ int MyOnSocket::onReceived(const xsocket::SockRecved rcv)
 
 	char dmsg[256];
 
-	snprintf(dmsg, 256,
+	snprintf(dmsg, 255,
 		"recv: %zu from sockfd: %d", rcv.count, rcv.fd_receiver);
-	clogf_append_v2(dmsg, __FILE__, __LINE__, 0);
+	dmsg[255] = '\0';
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
 
 	return 0;
 
