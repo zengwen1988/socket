@@ -14,7 +14,7 @@ LIBS += -lpthread
 
 # -Dxxx
 DEFINES += "ENABLE_SOCK_DEBUG=1"
-DEFINES += "NO_X_LOGFILE=1"
+# DEFINES += "NO_X_LOGFILE=1"
 
 # source
 # common
