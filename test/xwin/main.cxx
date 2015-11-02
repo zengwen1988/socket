@@ -4,7 +4,10 @@
 #include <posix/func/usleep.h>
 #include <posix/func/bzero.h>
 #include <timestamp.h>
-#include <c_logfile.h>
+
+#if defined(XSOCK_LOGLEVEL)
+#	include <x_logfile.hxx>
+#endif
 
 #if defined(WIN32)
 #	include <posix/func.hxx>
@@ -40,9 +43,9 @@ int main (void)
 	bzero(lof, 1024);
 
 	timestampname_d(lof, "gsserverr.", ".log");
-	clogf_update(lof);
+	xlog::Update(lof);
 
-	clogf_append_v2(__func__, __FILE__, __LINE__, 0);
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0);
 
 	MyXOnServerSocket ss;
 
@@ -52,7 +55,7 @@ int main (void)
 	bindto.is_ipv6 = false;
 	int ret = xsocket::SockServerHelper::startServer(bindto, &ss);
 
-	clogf_append_v2("XSockServerHelper::startServer", __FILE__, __LINE__,
+	xlog::AppendV2("XSockServerHelper::startServer", __FILE__, __LINE__,
 		ret);
 
 	usleep(1000 * 1e6);

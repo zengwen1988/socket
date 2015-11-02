@@ -75,7 +75,7 @@ protected:
 
 protected:
 	/* */
-	int didFinish int didFinish(SockWillFinish) = 0;
+	virtual int didFinish(SockWillFinish) = 0;
 
 /* override */
 public:

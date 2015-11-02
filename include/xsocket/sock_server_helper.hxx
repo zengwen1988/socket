@@ -39,8 +39,10 @@
 #if !defined(XSOCKET_SOCK_SERVER_HELPER_HXX__)
 #define XSOCKET_SOCK_SERVER_HELPER_HXX__ (1)
 
-#include <xsocket/on_server_socket.hxx>
-#include <xsocket/on_session.hxx>
+#include <xsocket/basic_sock_type.hxx>
+
+namespace xsocket { class OnServerSocket; }
+namespace xsocket { class OnSession; }
 
 namespace xsocket {
 

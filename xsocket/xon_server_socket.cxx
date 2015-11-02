@@ -42,8 +42,8 @@
 
 #include <xsocket/on_server_socket.hxx>
 
-#if !defined(NO_X_LOGFILE)
-#	include <c_logfile.h>
+#if defined(XSOCK_LOGLEVEL)
+#	include <x_logfile.hxx>
 #endif
 
 #include <xsocket/sock_server_accept_routine.hxx>

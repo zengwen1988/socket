@@ -123,9 +123,9 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 			server_callback->onConnected(serverfd, ret, clientProt);
 
 			/*
-			 * TODO start recv thread
+			 * TODO start recv thread (for each client)
 			 */
-			session_callback->startSession();
+			// session_callback->startSession();
 			/*
 			XSockServerCliSessionRoutine * clisess
 				= new XSockServerCliSessionRoutine();
