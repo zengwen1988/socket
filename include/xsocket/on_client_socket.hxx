@@ -40,12 +40,18 @@
 #if !defined (XSOCKET_ONCLIENTSOCKET_HXX__)
 #define XSOCKET_ONCLIENTSOCKET_HXX__ (1)
 
+#include <cstdio>
+
 #include <xsocket/basic_sock_type.hxx>
 
 /* NOT INCLUDES IN THIS FILE */
-namespace xsocket { namespace core { namespace internal { class ConnectToServerBySockfd; } } }
+namespace xsocket { namespace core { namespace internal {
+	class ConnectToServerBySockfd;
+} } }
 
 namespace xsocket {
+
+class OnClientSocketGC;
 
 /*
  * NAME class xsocket::OnClientSocket
@@ -56,8 +62,10 @@ class OnClientSocket {
 /* to delete */
 friend class xsocket::core::internal::ConnectToServerBySockfd;
 
+friend class xsocket::OnClientSocketGC;
 protected:
-	virtual ~OnClientSocket() {}
+	OnClientSocket(void);
+	virtual ~OnClientSocket();
 
 /* override */
 public:
@@ -67,6 +75,20 @@ public:
 	/* override true recv routine will exit */
 	virtual bool shouldTeminateRecv(int sockfd) = 0;
 
+	inline xsocket::OnClientSocketGC * gc (void) const { return this->_gc; }
+
+private:
+	xsocket::OnClientSocketGC * _gc;
+};
+
+class OnClientSocketGC {
+friend class xsocket::OnClientSocket;
+protected:
+	OnClientSocketGC (void) { }
+	~OnClientSocketGC () { }
+
+public:
+	void gc (xsocket::OnClientSocket * g) { if (NULL != g) { delete g;} }
 };
 
 } /* namespace xsocket */

@@ -38,6 +38,7 @@
 #include <xsocket/sock_core.hxx>
 
 #include <errno.h> /* errno */
+#include <cstring>
 
 #if !defined(WIN32)
 #	include <unistd.h>
@@ -48,7 +49,7 @@
 #include <fcntl.h> /* F_GETFL .. */
 
 
-#if !defined(NO_X_LOGFILE)
+#if	defined(XSOCKET_LOGLEVEL)
 #	include <x_logfile.hxx>
 #endif
 
@@ -228,7 +229,20 @@ int xsocket::core::SetSocketBlock(int sockfd, bool block)
 int xsocket::core::ShutdownSocket (int sockfd,
 	xsocket::ShutdownHow::Type how)
 {
-	return shutdown(sockfd, (int)how);
+	int ret = shutdown(sockfd, (int)how);
+	int e = errno;
+
+#if	defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
+	char msg[64];
+	snprintf(msg, 63, "FAIL: shutdown: %s", strerror(e));
+	xlog::AppendV2(msg, __FILE__, __LINE__, ret);
+#endif
+
+	if (0 != ret) {
+		return (0 != e) ? -e : -1;
+	} else {
+		return ret;
+	}
 }
 
 /*
