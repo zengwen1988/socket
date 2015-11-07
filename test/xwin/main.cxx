@@ -28,11 +28,6 @@ public: virtual int didFinish(xsocket::SockDidFinish) {
 }
 
 /* override this */
-public: virtual int onReceived(xsocket::SockRecved) {
-	return 0;
-}
-
-/* override this */
 public: virtual bool shouldTeminate(int) {
 	static int bb = 0;
 
