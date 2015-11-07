@@ -348,7 +348,7 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 	bool teminate;
 	xsocket::OnClientSocket * on_socket;
 	uint8_t * buf;
-	xsocket::SockWillFinish fb;
+	xsocket::SockDidFinish fb;
 	xsocket::SockClientRecviveParams * scr;
 	xsocket::SockRecved rcv;
 
@@ -366,14 +366,14 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 	sockfd = scr->sockfd();
 	on_socket = scr->on_socket();
 
-	fb.sockfd = sockfd;/* fill FI sockfd */
+	fb.fd = sockfd;/* fill FI sockfd */
 
 	teminate = on_socket->shouldTeminateRecv(sockfd);
 	buf = new uint8_t[4096];
 	// redparams.data = buf;
 	// redparams.sockfd = sockfd;
 
-	rcv.fd_receiver = sockfd;
+	rcv.fd = sockfd;
 	memcpy(&(rcv.info), scr->from(), sizeof(xsocket::NetProtocol));
 
 	while (0 == teminate)
@@ -388,7 +388,7 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 			xlog::AppendV2("FAIL: will finish", __FILE__, __LINE__, ret);
 #endif
 			fb.code = ret;/* fail */
-			on_socket->willFinish(fb);
+			on_socket->didFinish(fb);
 
 			goto end;
 		} else if (0 == ret) {
@@ -398,7 +398,7 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 				__LINE__, 0);
 #endif
 			fb.code = 0;
-			on_socket->willFinish(fb);
+			on_socket->didFinish(fb);
 			goto end;
 		} else if (ret > 0) {
 			/* success */
@@ -417,7 +417,7 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 	xlog::AppendV2("will finish: user terminate", __FILE__, __LINE__, 1);
 #endif
 	fb.code = 1;/* user terminate */
-	on_socket->willFinish(fb);
+	on_socket->didFinish(fb);
 
 end:
 	if (NULL != scr) {
