@@ -26,9 +26,11 @@ SOURCES += ../../../common/x_logfile.cxx
 SOURCES += ../../../common/simple_posix_thread.cxx
 #
 SOURCES += ../../../xsocket/xsock_core.cxx
-# client only
+# server only
 SOURCES += ../../../xsocket/xsock_server_core.cxx
 SOURCES += ../../../xsocket/xon_server_socket.cxx
+SOURCES += ../../../xsocket/on_session.cxx
+SOURCES += ../../../xsocket/xsock_session_routine.cxx
 SOURCES += ../../../xsocket/xsock_server_accept_routine.cxx
 SOURCES += ../../../xsocket/xsock_server_helper.cxx
 

@@ -44,8 +44,9 @@
 #define XSOCKET_SESSION_ROUTINE_HXX_ (1)
 
 #include <posix/thread/simple_thread.hxx> /* pthreadx::SimpleThread */
+#include <xsocket/basic_sock_type.hxx>
 
-namespace xsocket { namespace core { namespace internal { class SockServerAcceptRoutine; } } }
+namespace xsocket { class OnSession; }
 
 namespace xsocket { namespace core { namespace internal {
 
@@ -58,20 +59,24 @@ class SockSessionRoutine: public pthreadx::SimpleThread
  *   and delete by OnSession::didFinish when start session success
  *   and willFinish called
  */
-friend class xsocket::core::internal::SockServerAcceptRoutine;
+friend class xsocket::OnSession;
 
 protected:
 	/* create by xsocket::OnSession */
-	SockSessionRoutine(int sockfd);
+	SockSessionRoutine(int cli_fd, const xsocket::NetProtocol& client,
+		const xsocket::NetProtocol& server, xsocket::OnSession * on_session);
 
 protected:
 	/* delete by xsocket::OnSession */
-	~SockSessionRoutine();
+	virtual ~SockSessionRoutine();
 
 protected:
-	virtual void * run(void * session_callback);
+	virtual void * run(void * /* nil */);
 
 private:
+	int cli_fd;
+	xsocket::NetProtocol client;
+	xsocket::NetProtocol server;
 	static size_t instance_num;
 };
 

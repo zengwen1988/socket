@@ -86,6 +86,7 @@ public:
 	virtual bool shouldTeminate(int sockfd) = 0;
 
 private:
+	xsocket::core::internal::SockSessionRoutine * session_routine;
 	static size_t instance_num;
 
 };

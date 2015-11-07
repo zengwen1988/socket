@@ -1,5 +1,3 @@
-#include <xsocket/sock_server_helper.hxx>
-
 #include <stdio.h>
 #include <posix/func/usleep.h>
 #include <posix/func/bzero.h>
@@ -13,8 +11,10 @@
 #	include <posix/func.hxx>
 #endif
 
+#include <xsocket/basic_sock_type.hxx>
 #include <xsocket/on_server_socket.hxx>
 #include <xsocket/on_session.hxx>
+#include <xsocket/sock_server_helper.hxx>
 
 class MyXOnServerSocket: public xsocket::OnServerSocket {
 /* override this */
@@ -40,7 +40,23 @@ public: virtual bool shouldTeminate(int) {
 };
 
 class MyXOnSession: public xsocket::OnSession {
+protected:
+	/* */
+	virtual int didFinish (xsocket::SockWillFinish) {
+		return 0;
+	}
 
+/* override */
+public:
+	virtual int willFinish (xsocket::SockWillFinish) {
+		return 0;
+	}
+	virtual int onReceived (xsocket::SockRecved) {
+		return 0;
+	}
+	virtual bool shouldTeminate (int sockfd) {
+		return sockfd > 0 ? false : true;
+	}
 };
 
 int main (void)
