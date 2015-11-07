@@ -26,13 +26,12 @@ int xsocket::SockServerHelper::startServer (
 	xsocket::OnServerSocket * server_callback,
 	xsocket::OnSession * session_callback)
 {
-
 	int ret;
 
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
+#if defined(XSOCKET_LOGLEVEL)
 	/* trace */ char dmsg[128];
 	snprintf(dmsg, 127, "func: %s", __func__); dmsg[127] = '\0';
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_V);
 #endif
 
 	if (NULL == server_callback) {

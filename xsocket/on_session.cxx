@@ -38,39 +38,71 @@
  */
 
 #include <xsocket/on_session.hxx>
-#include <xsocket/sock_session_routine.hxx>
 
 #if defined(XSOCKET_LOGLEVEL)
 #	include <x_logfile.hxx>
 #endif
 
+#include <xsocket/sock_core.hxx>
+#include <xsocket/sock_session_routine.hxx>
+
+/* ONE RUN FOR EACH SERVER */
 xsocket::OnSession::OnSession (void)
 {
-	this->session_routine = NULL;
+#if defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_T);
+#endif
+
+	this->clis.clear();
 }
 
+/* ONE RUN FOR EACH SERVER */
 xsocket::OnSession::~OnSession ()
 {
-	this->session_routine = NULL;
+#if defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_T);
+#endif
+
+	this->clis.clear();
 }
 
-int xsocket::OnSession::startSession (int cli_fd, const NetProtocol& client,
+int xsocket::OnSession::startSession (int cli_fd,
+	const NetProtocol& client,
+	int svr_fd,
 	const NetProtocol& server)
 {
-	if (NULL != this->session_routine) {
-		return 0;
-	}
+#if defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_T);
+#endif
 
-	this->session_routine
+	/* will be auto release start success */
+	xsocket::core::internal::SockSessionRoutine * ass
 		= new xsocket::core::internal::SockSessionRoutine(cli_fd, client,
-		server);
+		svr_fd, server, this);
 
-	int ret = this->session_routine->start();
+	int ret = ass->start();
 	if (ret < 0) {
-		delete this->session_routine;
-		this->session_routine = NULL;
+		delete ass;
+		ass = NULL;
+	} else {
+		this->clis.push_back(cli_fd);
+		this->_should_exit = false;
 	}
 	/* else success: will auto release */
 
 	return ret;
+}
+
+void xsocket::OnSession::closeAllClis (void)
+{
+#if defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_T);
+#endif
+
+	while (this->clis.size() > 0) {
+		int fd = this->clis.front();
+		xsocket::core::ShutdownSocket(fd, xsocket::ShutdownHow::RDWR);
+		xsocket::core::CloseSocket(fd);
+		this->clis.pop_front();
+	}
 }

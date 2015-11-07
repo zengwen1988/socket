@@ -14,6 +14,7 @@ LIBS += -lpthread
 
 # -Dxxx
 DEFINES += "XSOCKET_LOGLEVEL=0x100"
+DEFINES += "XLOG_HASSTDOUT=1"
 
 # source
 # common

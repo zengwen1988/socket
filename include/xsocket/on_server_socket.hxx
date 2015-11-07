@@ -48,7 +48,7 @@ protected:
 /* override */
 public:
 	virtual int onConnected(int, int, const xsocket::NetProtocol&) = 0;
-	virtual int willFinish(SockWillFinish) = 0;
+	virtual int didFinish(SockDidFinish) = 0;
 	virtual bool shouldTeminate(int sockfd) = 0;
 
 public:
@@ -86,8 +86,7 @@ private:
 
 private:
 	xsocket::NetProtocol _server_prot;
-	static size_t instance_num;
-
+	static int instance_num;
 };
 
 } /* namespace xsocket */

@@ -79,22 +79,26 @@ struct SockOnConnnect {
 	xsocket::NetProtocol info;
 };
 
-struct SockWillFinish {
+struct SockDidFinish {
 	/* For client and server */
 	int code;/* finish code */
-	int sockfd;/* who with this sockfd will finish */
+	int fd;/* who with this sockfd will finish */
+	int fd_peer;
 	xsocket::NetProtocol info;/* who with this info will finish */
+	xsocket::NetProtocol peer;
 };
 
 struct SockRecved {
 	/* For client and server */
 	uint8_t * data;
 	int count;
-	int fd_receiver;
-	/* from sockfd */
+	/* self fd */
+	int fd;
+	int fd_peer;
 	int sockfd;
-	/* from info */
+	/* self */
 	xsocket::NetProtocol info;
+	xsocket::NetProtocol peer;
 };
 
 } /* namespace xsocket */

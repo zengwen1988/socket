@@ -42,43 +42,54 @@
 
 #include <xsocket/on_server_socket.hxx>
 
-#if defined(XSOCK_LOGLEVEL)
+#if defined(XSOCKET_LOGLEVEL)
 #	include <x_logfile.hxx>
 #endif
 
 #include <xsocket/sock_server_accept_routine.hxx>
+#include <xsocket/on_session.hxx>
 
+/* ONE RUN FOR EACH SERVER */
 xsocket::OnServerSocket::OnServerSocket (void)
 {
-	++OnServerSocket::instance_num;
+	++instance_num;
 
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	char dmsg[128];
-	snprintf(dmsg, 127, "func: %s: in: %zu", __func__,
-		OnServerSocket::instance_num);
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
+#if defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
+	xlog::AppendV2(__func__, __FILE__, __LINE__, instance_num, XLOG_LEVEL_T);
 #endif
+
+	this->_on_session = NULL;
 	this->_accept_routine
 		= new xsocket::core::internal::SockServerAcceptRoutine();
 	this->acceptPrepare();
 }
 
+/* ONE RUN FOR EACH SERVER */
 xsocket::OnServerSocket::~OnServerSocket ()
 {
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	char dmsg[128];
-	snprintf(dmsg, 127, "func: %s: in-will: %zu", __func__,
-		OnServerSocket::instance_num - 1);
-	dmsg[127] = '\0';
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
+	--instance_num;
+
+#if defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
+	xlog::AppendV2(__func__, __FILE__, __LINE__, instance_num, XLOG_LEVEL_T);
 #endif
 
+	if (NULL != this->_on_session) {
+#if		defined(XSOCKET_LOGLEVEL)
+		xlog::AppendV2("i'll delete _on_session", __FILE__, __LINE__,
+			0, XLOG_LEVEL_W);
+#endif
+		delete this->_on_session;
+		this->_on_session = NULL;
+	}
+
 	if (NULL != this->_accept_routine) {
+#if		defined(XSOCKET_LOGLEVEL)
+		xlog::AppendV2("i'll delete _accept_routine", __FILE__, __LINE__,
+			0, XLOG_LEVEL_W);
+#endif
 		delete this->_accept_routine;
 		this->_accept_routine = NULL;
 	}
-
-	--OnServerSocket::instance_num;
 }
 
 bool xsocket::OnServerSocket::acceptPrepare (void)
@@ -100,11 +111,7 @@ bool xsocket::OnServerSocket::acceptPrepare (void)
 
 int xsocket::OnServerSocket::startAccept (void)
 {
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	/* trace */ char dmsg[128];
-	snprintf(dmsg, 127, "func: %s", __func__); dmsg[127] = '\0';
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
-#endif
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_T);
 
 	if (NULL == this->_accept_routine) {
 		return -xsocket::error::NO_SERVER;
@@ -113,4 +120,4 @@ int xsocket::OnServerSocket::startAccept (void)
 	}
 }
 
-size_t xsocket::OnServerSocket::instance_num = 0;
+int xsocket::OnServerSocket::instance_num = 0;

@@ -40,14 +40,17 @@
 #if !defined (XSOCKET_ON_SESSION_HXX__)
 #define XSOCKET_ON_SESSION_HXX__ (1)
 
+#include <list>
+
 #include <xsocket/basic_sock_type.hxx> /* basic type */
 
-/* class xsocket::core::internal::SockSessionRoutine */
-namespace xsocket { namespace core { namespace internal {
-	class SockSessionRoutine; } } }
+namespace xsocket { class OnServerSocket; }
 /* class xsocket::core::internal::SockServerAcceptRoutine */
 namespace xsocket { namespace core { namespace internal {
 	class SockServerAcceptRoutine; } } }
+/* class xsocket::core::internal::SockSessionRoutine */
+namespace xsocket { namespace core { namespace internal {
+	class SockSessionRoutine; } } }
 
 namespace xsocket {
 
@@ -57,11 +60,8 @@ namespace xsocket {
  *   one session for multi clients
  */
 class OnSession {
-
 friend class xsocket::core::internal::SockServerAcceptRoutine;
-friend class xsocket::core::internal::SockSessionRoutine;
-
-public:
+protected:
 	OnSession(void);
 
 /*
@@ -70,25 +70,37 @@ public:
  * 2 or will be delete by SockServerAcceptRoutine when start fail
  * 3 or sub-class
  */
+friend class xsocket::OnServerSocket;
 protected:
 	virtual ~OnSession();
-	int startSession(int cli_fd, const NetProtocol& client,
+	int startSession(int cli_fd, const NetProtocol& client, int svr_fd,
 		const NetProtocol& server);
+	void closeAllClis(void);
 
+friend class xsocket::core::internal::SockSessionRoutine;
 protected:
-	/* */
-	virtual int didFinish(SockWillFinish) = 0;
+	inline void notifyAllExit (void) { this->_should_exit = true; }
+	inline bool should_exit (void) { return this->_should_exit; }
+	inline void markExited (int fd) {
+		if (this->clis.size() > 0) { this->clis.remove(fd);
+	} }
 
 /* override */
 public:
-	virtual int willFinish(SockWillFinish) = 0;
-	virtual int onReceived(SockRecved) = 0;
+	/*
+	 * .code:
+	 *   0: user teminate
+	 *   1: connection lost
+	 *   -errno: client die
+	 */
+	virtual int didFinish(const SockDidFinish&) = 0;
+	virtual int onReceived(const SockRecved&) = 0;
 	virtual bool shouldTeminate(int sockfd) = 0;
 
 private:
-	xsocket::core::internal::SockSessionRoutine * session_routine;
-	static size_t instance_num;
-
+	/* here not delete self -- but by server */
+	bool _should_exit;
+	std::list<int> clis;
 };
 
 } /* namespace xsocket */

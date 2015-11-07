@@ -43,6 +43,7 @@
 #include <xsocket/sock_server_accept_routine.hxx>
 
 #include <cstring>
+#include <posix/func/usleep.h>
 
 /* inet_ntoa */
 #if !defined(WIN32)
@@ -55,7 +56,7 @@
 
 #include <posix/func/snprintf.h>
 
-#if !defined(NO_X_LOGFILE)
+#if defined(XSOCKET_LOGLEVEL)
 #	include <x_logfile.hxx>
 #endif
 
@@ -115,51 +116,65 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 			strncpy(clientProt.ip, p, XSOCKET_MAXIPLEN + 1);
 			clientProt.port = ntohs(addr.sin_port);
 
+#if			defined(XSOCKET_LOGLEVEL)
 			snprintf(dmsg, 255,
-				"server[%d]. got connection: [%d] %s:%u",
+				"serverfd[%d]. got connection: clientfd[%d] %s:%u",
 				serverfd, ret, clientProt.ip, clientProt.port);
 			dmsg[255] = 0;
-			xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
+			xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_I);
+#endif
 
 			server_callback->onConnected(serverfd, ret, clientProt);
 
 			/*
 			 * TODO start recv thread (for each client)
 			 */
-			session_callback->startSession(ret, clientProt, serverProt);
-			/*
-			XSockServerCliSessionRoutine * clisess
-				= new XSockServerCliSessionRoutine();
-			*/
-
-
+			session_callback->startSession(ret, clientProt, serverfd,
+				serverProt);
 		} else {
-			fprintf(stderr, "+%d: server[%d]. willFinish: %d\n",
-				__LINE__, serverfd, ret);
+#if			defined(XSOCKET_LOGLEVEL)
+			snprintf(dmsg, 255,
+				"serverfd[%d]. will teminate: %s (%s:%u)",
+				serverfd, strerror(-ret), clientProt.ip, clientProt.port);
+			dmsg[255] = 0;
+			xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_F);
+#endif
 			ec = ret;
+			teminate = false;
+			break;
 		}
 
 		/* usleep(5 * 1e6); */
 	}
 
 	if (teminate) {
-		ec = 1;/* by teminate */
+		ec = 0;/* by teminate */
 	}
 
 	xsocket::core::ShutdownSocket(serverfd, xsocket::ShutdownHow::RDWR);
 	xsocket::core::CloseSocket(serverfd);
 
-	xsocket::SockWillFinish fi;
+	session_callback->notifyAllExit();
+	usleep(100 * 1e3);
+	session_callback->closeAllClis();
+	usleep(100 * 1e3);
+
+	xsocket::SockDidFinish fi;
 	fi.code = ec;
-	fi.sockfd = serverfd;/* server will finish */
+	fi.fd = serverfd;/* server will finish */
+	memcpy(&(fi.info), &(serverProt), sizeof(xsocket::NetProtocol));
 	/* TODO: fill info */
 
-	server_callback->willFinish(fi);
+	server_callback->didFinish(fi);
 
 	/*
 	 * YES when delete server_callback
 	 * -- self the routine will also be delete nice
 	 */
+#if	defined(XSOCKET_LOGLEVEL)
+	xlog::AppendV2("i'll exit and delete server_callback", __FILE__, __LINE__,
+		0, XLOG_LEVEL_W);
+#endif
 	delete server_callback;
 	server_callback = NULL;
 
@@ -168,42 +183,19 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 } /* xsocket::core::internal::SockServerAcceptRoutine::run */
 
 
+/* ONE RUN FOR EACH SERVER */
 xsocket::core::internal::SockServerAcceptRoutine::SockServerAcceptRoutine
-(void)
+	(void)
 {
-	++SockServerAcceptRoutine::instance_num;
-
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	char dmsg[128];
-	snprintf(dmsg, 127,
-		"xsocket::core::internal::SockServerAcceptRoutine::SockServerAcceptRoutine: "
-		"in: %zu", SockServerAcceptRoutine::instance_num);
-	dmsg[127] = '\0';
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
+#if	defined(XSOCKET_LOGLEVEL)
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_T);
 #endif
 }
 
+/* ONE RUN FOR EACH SERVER */
 xsocket::core::internal::SockServerAcceptRoutine::~SockServerAcceptRoutine ()
 {
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	int ret;
-	long int retval;
-	ret = this->nowFinish((void **)&retval);
-#else
-	(void)this->nowFinish();
+#if	defined(XSOCKET_LOGLEVEL)
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_T);
 #endif
-
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	char dmsg[128];
-	snprintf(dmsg, 127,
-		"xsocket::core::internal::SockServerAcceptRoutine::~SockServerAcceptRoutine: "
-		"in-will: %zu, ret: %d retval: %ld",
-		SockServerAcceptRoutine::instance_num - 1, ret, retval);
-	dmsg[127] = '\0';
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0);
-#endif
-
-	--SockServerAcceptRoutine::instance_num;
 }
-
-size_t xsocket::core::internal::SockServerAcceptRoutine::instance_num = 0;

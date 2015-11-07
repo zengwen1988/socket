@@ -46,12 +46,16 @@
 #include <posix/thread/simple_thread.hxx> /* pthreadx::SimpleThread */
 #include <xsocket/basic_sock_type.hxx>
 
+#define XSOCKET_WAIT_READABLE_TIMEOUT (15) /* second */
+#define XSOCKET_READ_TIMEOUT (15) /* second */
+
 namespace xsocket { class OnSession; }
 
 namespace xsocket { namespace core { namespace internal {
 
-class SockSessionRoutine: public pthreadx::SimpleThread
-{
+class SockSessionRoutineGC;
+
+class SockSessionRoutine: public pthreadx::SimpleThread {
 
 /*
  * 1 new by SockServerAcceptRoutine
@@ -64,8 +68,10 @@ friend class xsocket::OnSession;
 protected:
 	/* create by xsocket::OnSession */
 	SockSessionRoutine(int cli_fd, const xsocket::NetProtocol& client,
-		const xsocket::NetProtocol& server, xsocket::OnSession * on_session);
+		int svr_fd, const xsocket::NetProtocol& server,
+		xsocket::OnSession * on_session);
 
+friend class xsocket::core::internal::SockSessionRoutineGC;
 protected:
 	/* delete by xsocket::OnSession */
 	virtual ~SockSessionRoutine();
@@ -73,11 +79,28 @@ protected:
 protected:
 	virtual void * run(void * /* nil */);
 
+	xsocket::core::internal::SockSessionRoutineGC * gc;
+
 private:
 	int cli_fd;
+	int svr_fd;
 	xsocket::NetProtocol client;
 	xsocket::NetProtocol server;
-	static size_t instance_num;
+	/* will not delete when session routine exit */
+	xsocket::OnSession * on_session;
+
+	static int instance_num;
+};
+
+class SockSessionRoutineGC {
+friend class xsocket::core::internal::SockSessionRoutine;
+protected:
+	SockSessionRoutineGC (void) {}
+	inline void gc (xsocket::core::internal::SockSessionRoutine * g) {
+		if (NULL != g) {
+			delete g;
+		}
+	}
 };
 
 } } }
