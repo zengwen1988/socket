@@ -79,7 +79,7 @@ int xsocket::core::GetSockfdByHost (const xsocket::NetProtocol& host)
 	 */
 	ret = ipv4_to_netu32_r(&ipv4, host.ip);
 	if (0 != ret) {
-#if 	!defined(NO_X_LOGFILE)
+#if 	defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x18)
 		xlog::AppendV2("Invalid IPv4", __FILE__, __LINE__, ret);
 #endif
 		return ret;

@@ -1,9 +1,5 @@
 #include <xsocket/sock_server_helper.hxx>
 
-#include <xsocket/sock_core.hxx>
-
-#include <xsocket/sock_server_accept_routine.hxx>
-
 #if !defined(WIN32)
 #	include <sys/socket.h>
 #	include <netinet/in.h>
@@ -11,9 +7,15 @@
 #else
 #endif
 
-#if !defined(NO_X_LOGFILE)
+#if defined(XSOCKET_LOGLEVEL)
 #	include <x_logfile.hxx>
 #endif
+
+#include <xsocket/sock_core.hxx>
+
+#include <xsocket/sock_server_accept_routine.hxx>
+#include <xsocket/on_server_socket.hxx>
+
 
 /*
  * if fail please release callbacks
@@ -51,11 +53,11 @@ int xsocket::SockServerHelper::startServer (
 
 #if	0
 	WORD versionRequested;
-    WSADATA dt;
+	WSADATA dt;
 
-    versionRequested = MAKEWORD(1,1);
+	versionRequested = MAKEWORD(1,1);
 	/* load winsocket dll */
-    ret = WSAStartup(versionRequested, &dt);
+	ret = WSAStartup(versionRequested, &dt);
 #endif
 	ret = xsocket::core::InitSocketEnvironment();
 

@@ -5,13 +5,16 @@
 #include <posix/func/bzero.h>
 #include <timestamp.h>
 
-#if defined(XSOCK_LOGLEVEL)
+#if defined(XSOCKET_LOGLEVEL)
 #	include <x_logfile.hxx>
 #endif
 
 #if defined(WIN32)
 #	include <posix/func.hxx>
 #endif
+
+#include <xsocket/on_server_socket.hxx>
+#include <xsocket/on_session.hxx>
 
 class MyXOnServerSocket: public xsocket::OnServerSocket {
 /* override this */
@@ -36,6 +39,10 @@ public: virtual bool shouldTeminate(int) {
 }
 };
 
+class MyXOnSession: public xsocket::OnSession {
+
+};
+
 int main (void)
 {
 
@@ -48,12 +55,13 @@ int main (void)
 	xlog::AppendV2(__func__, __FILE__, __LINE__, 0);
 
 	MyXOnServerSocket ss;
+	MyXOnSession ssi;
 
 	xsocket::NetProtocol bindto;
 	strcpy(bindto.ip, "0.0.0.0");
 	bindto.port = 12345;
 	bindto.is_ipv6 = false;
-	int ret = xsocket::SockServerHelper::startServer(bindto, &ss);
+	int ret = xsocket::SockServerHelper::startServer(bindto, &ss, &ssi);
 
 	xlog::AppendV2("XSockServerHelper::startServer", __FILE__, __LINE__,
 		ret);

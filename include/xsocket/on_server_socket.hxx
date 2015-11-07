@@ -1,6 +1,8 @@
 #if !defined (XSOCKET_ON_SERVER_SOCKET_HXX__)
 #define XSOCKET_ON_SERVER_SOCKET_HXX__ (1)
 
+#include <cstring>
+
 #include <xsocket/basic_sock_type.hxx> /* basic type */
 
 /* class xsocket::core::internal::SockServerAcceptRoutine */
@@ -57,6 +59,13 @@ protected:
 	inline void set_sockfd (int fd) { this->_sockfd = fd; }
 	inline void set_on_session (xsocket::OnSession * os) {
 		this->_on_session = os; }
+	inline xsocket::NetProtocol server_prot (void) {
+		return this->_server_prot;
+	}
+	inline void set_server_prot (const xsocket::NetProtocol& server_prot) {
+		memcpy(&(this->_server_prot), &(server_prot),
+			sizeof(xsocket::NetProtocol));
+	}
 
 /* NOTE BETTER let xsocket::SockServerHelper start accept */
 protected:
@@ -76,6 +85,7 @@ private:
 	xsocket::OnSession * _on_session;
 
 private:
+	xsocket::NetProtocol _server_prot;
 	static size_t instance_num;
 
 };

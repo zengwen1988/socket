@@ -66,6 +66,7 @@ protected:
 	virtual ~SockServerAcceptRoutine();
 
 protected:
+	/* arg: xsocket::OnServerSocket */
 	virtual void * run(void * server_callback);
 
 private:

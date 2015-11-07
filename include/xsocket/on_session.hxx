@@ -43,8 +43,8 @@
 #include <xsocket/basic_sock_type.hxx> /* basic type */
 
 /* class xsocket::core::internal::SockSessionRoutine */
-// namespace xsocket { namespace core { namespace internal {
-// 	class SockSessionRoutine; } } }
+namespace xsocket { namespace core { namespace internal {
+	class SockSessionRoutine; } } }
 /* class xsocket::core::internal::SockServerAcceptRoutine */
 namespace xsocket { namespace core { namespace internal {
 	class SockServerAcceptRoutine; } } }
@@ -59,7 +59,7 @@ namespace xsocket {
 class OnSession {
 
 friend class xsocket::core::internal::SockServerAcceptRoutine;
-// friend class xsocket::core::internal::SockSessionRoutine;
+friend class xsocket::core::internal::SockSessionRoutine;
 
 public:
 	OnSession(void);
@@ -72,6 +72,8 @@ public:
  */
 protected:
 	virtual ~OnSession();
+	int startSession(int cli_fd, const NetProtocol& client,
+		const NetProtocol& server);
 
 protected:
 	/* */

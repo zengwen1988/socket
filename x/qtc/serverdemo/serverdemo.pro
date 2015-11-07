@@ -13,7 +13,7 @@ INCLUDEPATH += ../../../include
 LIBS += -lpthread
 
 # -Dxxx
-DEFINES += "XSOCK_LOGLEVEL=0x100"
+DEFINES += "XSOCKET_LOGLEVEL=0x100"
 
 # source
 # common

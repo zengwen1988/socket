@@ -97,6 +97,7 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 	int ec = 0;
 	struct sockaddr_in addr;
 	char * p;
+	xsocket::NetProtocol serverProt = server_callback->server_prot();
 	xsocket::NetProtocol clientProt;
 
 	// XSockServerCliSessionParams cliSessParams;
@@ -125,7 +126,7 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 			/*
 			 * TODO start recv thread (for each client)
 			 */
-			// session_callback->startSession();
+			session_callback->startSession(ret, clientProt, serverProt);
 			/*
 			XSockServerCliSessionRoutine * clisess
 				= new XSockServerCliSessionRoutine();
