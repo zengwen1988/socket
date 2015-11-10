@@ -1,8 +1,12 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <posix/func/usleep.h>
 #include <posix/func/bzero.h>
 #include <timestamp.h>
 
+#include <string>
+
+#include <posix/thread/simple_thread.hxx>
 #include <x_logfile.hxx>
 
 #if defined(WIN32)
@@ -14,6 +18,91 @@
 #include <xsocket/on_server_socket.hxx>
 #include <xsocket/on_session.hxx>
 #include <xsocket/sock_server_helper.hxx>
+
+namespace ncsr {
+
+class GetSendDataRoutine: public pthreadx::SimpleThread {
+public:
+	GetSendDataRoutine (void * fd) : SimpleThread(fd) {
+		this->_byebye = false;
+
+		timestampname();
+		char path[512];
+		snprintf(path, 511, "/tmp/ncsr/%d");
+	}
+	void byebye (void) { this->_byebye = true; }
+
+protected:
+	virtual void * run (void * sfd) {
+		int fd = static_cast<int>(reinterpret_cast<long int>(sfd));
+		bool byebye = true;
+		do {
+			byebye = this->_byebye;
+			if (byebye) {
+				goto bye;
+			}
+
+			usleep(10 * 1e3);
+		} while (! byebye);
+
+	bye:
+			return NULL;
+	}
+
+private:
+	int get (const std::string& from, uint8_t * out, int max) {
+		int fd, ret;
+		off_t file_sz;
+
+		if (NULL == out) {
+			return -EINVAL;
+		}
+
+		if (max <= 0) {
+			return 0;
+		}
+
+		const char * ff = from.c_str();
+
+		fd = open(ff, O_RDONLY);
+
+		if (fd < 0) {
+			return -errno;
+		}
+
+
+		file_sz = lseek(fd, 0, SEEK_END);
+		if ((off_t)-1 == file_sz) {
+			ret = -1;
+			goto _ret;
+		}
+
+		if (file_sz <= 0) {
+			ret = -1;
+			goto _ret;
+		}
+
+		if (max > file_sz) {
+			max = file_sz;
+		}
+
+		file_sz = lseek(fd, 0, SEEK_SET);
+		if ((off_t)-1 == file_sz) {
+			goto _ret;
+		}
+
+		ret = read(fd, out, max);
+
+	_ret:
+		close(fd);
+		(void)unlink(ff);
+		return ret;
+	}
+
+
+private:
+	bool _byebye;
+};
 
 class MyXOnServerSocket: public xsocket::OnServerSocket {
 /* override this */
@@ -58,6 +147,8 @@ public:
 		return sockfd > 0 ? false : true;
 	}
 };
+
+}
 
 int main (void)
 {
