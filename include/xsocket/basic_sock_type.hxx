@@ -122,7 +122,7 @@ namespace status { enum Type {
 	UNKNOWN = 0,
 	CONNECTING = 1,
 	CONNECTED,
-	DISCONNECTING,
+	DISCONNECTED,
 }; }
 
 
