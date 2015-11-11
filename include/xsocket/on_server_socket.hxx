@@ -47,7 +47,8 @@ protected:
  */
 /* override */
 public:
-	virtual int onConnected(int, int, const xsocket::NetProtocol&) = 0;
+	virtual int onConnected(int svr_fd, int cli_fd,
+		const xsocket::NetProtocol& cli_prot) = 0;
 	virtual int didFinish(SockDidFinish) = 0;
 	virtual bool shouldTeminate(int sockfd) = 0;
 
