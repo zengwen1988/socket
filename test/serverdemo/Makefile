@@ -28,25 +28,24 @@ VPATH += ../../common/time
 VPATH += ../../xsocket
 VPATH += ../../test/2
 
-OBJS +=
-OBJS += timestamp.o
-OBJS += timezone_util.o
-OBJS += is_ipv4_str.o
-OBJS += simple_net_conv.o
-OBJS += x_logfile.o
-OBJS += simple_posix_thread.o
-OBJS += xsock_core.o
-OBJS += xsock_server_core.o
-OBJS += xon_server_socket.o
-OBJS += on_session.o
-OBJS += xsock_session_routine.o
-OBJS += xsock_server_accept_routine.o
-OBJS += xsock_server_helper.o
-OBJS += random.o
-OBJS += xsimple_timer.o
-OBJS += main.o
-
 OUT ?= .
+
+OBJS += $(OUT)/timestamp.o
+OBJS += $(OUT)/timezone_util.o
+OBJS += $(OUT)/is_ipv4_str.o
+OBJS += $(OUT)/simple_net_conv.o
+OBJS += $(OUT)/x_logfile.o
+OBJS += $(OUT)/simple_posix_thread.o
+OBJS += $(OUT)/xsock_core.o
+OBJS += $(OUT)/xsock_server_core.o
+OBJS += $(OUT)/xon_server_socket.o
+OBJS += $(OUT)/on_session.o
+OBJS += $(OUT)/xsock_session_routine.o
+OBJS += $(OUT)/xsock_server_accept_routine.o
+OBJS += $(OUT)/xsock_server_helper.o
+OBJS += $(OUT)/random.o
+OBJS += $(OUT)/xsimple_timer.o
+OBJS += $(OUT)/main.o
 
 PORT ?= 12345
 CXXFLAGS += -DPORT=$(PORT)
@@ -76,8 +75,8 @@ endif
 clean:
 	@rm -fv $(OBJS) $(TARGET)
 
+# @rm -fv $(OUT)/*.o.d
+# ifneq ($(OUT), .)
+# 	@rmdir $(OUT)/
+# endif
 distclean: clean
-	@rm -fv $(OUT)/*.o.d
-ifneq ($(OUT), .)
-	@rmdir $(OUT)/
-endif

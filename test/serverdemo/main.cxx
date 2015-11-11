@@ -52,12 +52,12 @@ public:
 			this->_byebye = false;
 
 			char buf[512];
-			snprintf(buf, 511, "mkdir -p /tmp/ncsr%u/", PORT % 0xffff);
+			snprintf(buf, 511, "mkdir -p /tmp/ncsr%05u/", PORT % 0xffff);
 			buf[511] = '\0';
 			int ret = system(buf);
 			ret = ret;
 
-			snprintf(buf, 511, "/tmp/ncsr/%d", session_fd);
+			snprintf(buf, 511, "/tmp/ncsr%05u/%d", PORT % 0xffff, session_fd);
 			buf[511] = '\0';
 			this->path = std::string(buf);
 		} else {
@@ -189,7 +189,21 @@ public:
 	}
 	virtual int onReceived (const xsocket::SockRecved& red) {
 		xlog::AppendV2(__func__, __FILE__, __LINE__, red.count, XLOG_LEVEL_I);
-		xsocket::core::SendData(red.fd, red.data, 0, red.count);
+
+		bool is_ascii = true;
+		for (int i = 0; i < red.count; ++i) {
+			if (0 == isascii(red.data[i])) {
+				is_ascii = false;
+				break;
+			}
+		}
+
+		if (is_ascii) {
+			xlog::AppendV2((char *)red.data, __FILE__, __LINE__, 0,
+				XLOG_LEVEL_I);
+		}
+
+		/* xsocket::core::SendData(red.fd, red.data, 0, red.count); */
 		return 0;
 	}
 	virtual bool shouldTeminate (int sockfd) {
