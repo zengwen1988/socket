@@ -1,0 +1,2 @@
+rm -f is_ipv4_str.c && cp /repo/simple-net-util/is_ipv4_str.c .
+rm -f simple_net_conv.c && cp /repo/simple-net-util/simple_net_conv.c .

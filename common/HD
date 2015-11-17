@@ -1,0 +1,3 @@
+rm -f simple_posix_thread.cxx && cp /repo/thread/simple_posix_thread.cxx .
+rm -f x_logfile.cxx && cp /repo/nice-log/x_logfile.cxx .
+rm -f xsimple_timer.cxx && cp /repo/cxx-SimpleTimer/xsimple_timer.cxx .

@@ -1,0 +1,3 @@
+rm -f gettimeofday.c && cp /repo/c-time-util/posix/gettimeofday.c .
+rm -f timestamp.c && cp /repo/c-time-util/timestamp.c .
+rm -f timezone_util.c && cp /repo/c-time-util/timezone_util.c .

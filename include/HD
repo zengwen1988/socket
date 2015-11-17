@@ -1,0 +1,8 @@
+rm -f posix && cp /repo/posix-anywhere-basis/include/posix . -r
+rm -f random.h && cp /repo/utils/include/random.h . -r
+rm -f simple_net_conv.h && cp /repo/simple-net-util/include/simple_net_conv.h . -r
+rm -f simple_net_util.h && cp /repo/simple-net-util/include/simple_net_util.h . -r
+rm -f timestamp.h && cp /repo/c-time-util/include/timestamp.h . -r
+rm -f timezone_util.h && cp /repo/c-time-util/include/timezone_util.h . -r
+rm -f x_logfile.hxx && cp /repo/nice-log/include/x_logfile.hxx . -r
+rm -f xsimple_timer.hxx && cp /repo/cxx-SimpleTimer/xsimple_timer.hxx . -r
