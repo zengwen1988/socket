@@ -33,7 +33,6 @@ VPATH += ../../common
 VPATH += ../../common/net
 VPATH += ../../common/time
 VPATH += ../../xsocket
-VPATH += ../../test/2
 
 OUT ?= .
 
@@ -50,7 +49,6 @@ OBJS += $(OUT)/on_session.o
 OBJS += $(OUT)/xsock_session_routine.o
 OBJS += $(OUT)/xsock_server_accept_routine.o
 OBJS += $(OUT)/xsock_server_helper.o
-OBJS += $(OUT)/random.o
 OBJS += $(OUT)/xsimple_timer.o
 OBJS += $(OUT)/main.o
 
