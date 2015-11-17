@@ -24,7 +24,7 @@ LINKER := $(CXX)
 LDFLAGS += -Wl,-O1
 LDFLAGS += -lpthread
 ifneq ($(MINGW32), )
-  LDFLAGS += -lws2_32
+  LDFLAGS += -lws2_32 --static
 endif
 STRIP := $(CROSS_COMPILER)strip
 RM = rm -f
