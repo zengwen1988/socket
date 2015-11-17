@@ -1,4 +1,4 @@
 #!/bin/sh
 
-make distclean PORT=5577 OUT=out
-make PORT=5577 OUT=out
+make distclean PORT=5577 OUT=out5577
+make PORT=5577 OUT=out5577

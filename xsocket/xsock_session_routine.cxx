@@ -158,8 +158,14 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 				timeout_rcv.tv_sec = XSOCKET_READ_TIMEOUT;
 				timeout_rcv.tv_usec = 0;
 
+#				if !defined(WIN32)
 				ret = setsockopt(cli_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout_rcv,
 					(socklen_t)sizeof(struct timeval));
+#				else
+				ret = setsockopt(cli_fd, SOL_SOCKET, SO_RCVTIMEO,
+					reinterpret_cast<char *>(&timeout_rcv),
+					(int)sizeof(struct timeval));
+#endif
 
 				if (ret < 0) {
 					ret = errno;
@@ -193,7 +199,12 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 			 */
 			errno = 0;
 			/* ret = recv(cli_fd, rcved.data, 4096, MSG_WAITALL); */
+#			if !defined(WIN32)
 			ret = recv(cli_fd, rcved.data, 4096, MSG_DONTWAIT);
+#			else
+			ret = recv(cli_fd, reinterpret_cast<char *>(rcved.data), 4096,
+				0x40);
+#endif
 
 			if ((ret < 0) && (EAGAIN == errno)) {
 #if				defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x10)

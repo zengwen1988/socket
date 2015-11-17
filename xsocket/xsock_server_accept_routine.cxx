@@ -54,7 +54,9 @@
 /* #	include <WinSock2.h> */
 #endif
 
-#include <posix/func/snprintf.h>
+#if !defined(MINGW32)
+#	include <posix/func/snprintf.h>
+#endif
 
 #if defined(XSOCKET_LOGLEVEL)
 #	include <x_logfile.hxx>

@@ -13,12 +13,19 @@ CFLAGS += $(INCPATH)
 CXXFLAGS += $(INCPATH)
 CFLAGS += -Wp,-MD,$@.d
 CXXFLAGS += -Wp,-MD,$@.d
+ifneq ($(MINGW32), )
+  CFLAGS += -DMINGW32=1
+  CXXFLAGS += -DMINGW32=1
+endif
 CXFLAGS += -Wall -Wno-unused-parameter
 CXXFLAGS += -Wall -Wno-unused-parameter
 
 LINKER := $(CXX)
 LDFLAGS += -Wl,-O1
 LDFLAGS += -lpthread
+ifneq ($(MINGW32), )
+  LDFLAGS += -lws2_32
+endif
 STRIP := $(CROSS_COMPILER)strip
 RM = rm -f
 
@@ -49,7 +56,7 @@ OBJS += $(OUT)/main.o
 
 PORT ?= 12345
 CXXFLAGS += -DPORT=$(PORT)
-TARGET ?= $(OUT)/ncsr$(PORT)
+TARGET ?= $(OUT)/ncsr$(PORT)$(SUFFIX)
 
 all: .prepare $(TARGET)
 	@echo "All done"
@@ -73,7 +80,7 @@ ifneq ($(dep_files),)
 endif
 
 clean:
-	@rm -fv $(OBJS) $(TARGET)
+	@rm -fv $(OBJS) $(TARGET) $(OUT)/*.o.d
 
 # @rm -fv $(OUT)/*.o.d
 # ifneq ($(OUT), .)

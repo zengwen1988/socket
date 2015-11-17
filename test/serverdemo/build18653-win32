@@ -1,0 +1,5 @@
+#!/bin/sh
+
+make distclean PORT=18653 OUT=out18653
+make CROSS_COMPILER=i686-w64-mingw32- MINGW32=1 SUFFIX=.exe \
+	PORT=18653 OUT=out18653
