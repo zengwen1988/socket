@@ -327,7 +327,7 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 		MSG_DONTWAIT);
 #else
 	ret = (int)recv(sockfd, (char *)(buf + start), max,
-		0x40);
+		0);
 #endif
 
 	/* FIXME: check if here ok */

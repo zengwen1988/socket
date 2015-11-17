@@ -203,7 +203,7 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 			ret = recv(cli_fd, rcved.data, 4096, MSG_DONTWAIT);
 #			else
 			ret = recv(cli_fd, reinterpret_cast<char *>(rcved.data), 4096,
-				0x40);
+				0);
 #endif
 
 			if ((ret < 0) && (EAGAIN == errno)) {
