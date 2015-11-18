@@ -67,7 +67,9 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 	struct timeval timeout_rcv;
 	int nfds;
 	fd_set readfds;
+#if	defined(XSOCKET_LOGLEVEL)
 	char msg[128];
+#endif
 
 	xsocket::SockDidFinish didfi;
 	xsocket::SockRecved rcved;

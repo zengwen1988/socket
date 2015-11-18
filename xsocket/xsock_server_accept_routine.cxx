@@ -58,9 +58,7 @@
 #	include <posix/func/snprintf.h>
 #endif
 
-#if defined(XSOCKET_LOGLEVEL)
-#	include <x_logfile.hxx>
-#endif
+#include <x_logfile.hxx>
 
 #include <xsocket/sock_core.hxx>
 #include <xsocket/sock_server_core.hxx>
@@ -73,19 +71,14 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 	int ret;
 	char dmsg[256];
 
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	xlog::AppendV2("xsocket::core::internal::SockServerAcceptRoutine::run",
-		__FILE__, __LINE__, 0);
-#endif
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0);
 
 	xsocket::OnServerSocket * server_callback = (xsocket::OnServerSocket *)sc;
 
 	if (NULL == server_callback) {
 		ret = -xsocket::error::NO_SERVER;
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-		xlog::AppendV2("ERROR: no server",
-			__FILE__, __LINE__, ret);
-#endif
+		xlog::AppendV2("ERROR: no server", __FILE__, __LINE__, ret,
+			XLOG_LEVEL_E);
 		return (void *)ret;
 	}
 
@@ -118,13 +111,11 @@ void * xsocket::core::internal::SockServerAcceptRoutine::run (void * sc)
 			strncpy(clientProt.ip, p, XSOCKET_MAXIPLEN + 1);
 			clientProt.port = ntohs(addr.sin_port);
 
-#if			defined(XSOCKET_LOGLEVEL)
 			snprintf(dmsg, 255,
 				"serverfd[%d]. got connection: clientfd[%d] %s:%u",
 				serverfd, ret, clientProt.ip, clientProt.port);
 			dmsg[255] = 0;
-			xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_I);
-#endif
+			xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_V);
 
 			server_callback->onConnected(serverfd, ret, clientProt);
 
