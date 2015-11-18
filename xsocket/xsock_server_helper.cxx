@@ -7,9 +7,7 @@
 #else
 #endif
 
-#if defined(XSOCKET_LOGLEVEL)
-#	include <x_logfile.hxx>
-#endif
+#include <x_logfile.hxx>
 
 #include <xsocket/sock_core.hxx>
 

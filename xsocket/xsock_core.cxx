@@ -49,9 +49,7 @@
 #include <fcntl.h> /* F_GETFL .. */
 
 
-#if	defined(XSOCKET_LOGLEVEL)
-#	include <x_logfile.hxx>
-#endif
+#include <x_logfile.hxx>
 
 #include <simple_net_conv.h>
 

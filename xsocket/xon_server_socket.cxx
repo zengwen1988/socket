@@ -42,9 +42,7 @@
 
 #include <xsocket/on_server_socket.hxx>
 
-#if defined(XSOCKET_LOGLEVEL)
-#	include <x_logfile.hxx>
-#endif
+#include <x_logfile.hxx>
 
 #include <xsocket/sock_server_accept_routine.hxx>
 #include <xsocket/on_session.hxx>
