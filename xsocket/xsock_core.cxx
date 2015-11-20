@@ -139,20 +139,21 @@ sock_fail:
  *   - NOTE: should use valid arguments
  */
 ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
-	size_t count)
+	size_t _count)
 {
-
 	int ret;
 	ssize_t wo = 0;/* already wrote */
 	ssize_t w;
+	ssize_t count = static_cast<ssize_t>(_count);
 
-	while ((count - wo) > 0) {
-#if		!defined(WIN32)
+	while (count > wo) {
+#		if !defined(WIN32)
 		w = write(sockfd, data + start + (int)wo, count - wo);
-#else
+#		else
 		w = send(sockfd, (const char *)(data + start + (int)wo), count - wo,
 			0);/* 0x40 no block, now 0 */
-#endif
+#		endif
+		xlog::AppendV2("sent", __FILE__, __LINE__, w, XLOG_LEVEL_I);
 
 		if (w < 0) {
 			ret = -errno;
@@ -164,7 +165,6 @@ ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
 	}
 
 	return wo;
-
 }
 
 

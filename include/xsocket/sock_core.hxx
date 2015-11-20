@@ -60,7 +60,7 @@ namespace xsocket { namespace core {
  */
 int GetSockfdByHost(const xsocket::NetProtocol& target);
 
-ssize_t SendData(int sockfd, const uint8_t * data, int start, size_t count);
+ssize_t SendData(int sockfd, const uint8_t * data, int start, size_t _count);
 
 int SetSocketBlock(int sockfd, bool block);
 

@@ -34,17 +34,15 @@ int xsocket::SockServerHelper::startServer (
 
 	if (NULL == server_callback) {
 		ret = -xsocket::error::NO_SERVER_CB;
-#if 	!defined(NO_X_LOGFILE)
-		xlog::AppendV2("null server callback", __FILE__, __LINE__, ret);
-#endif
+		xlog::AppendV2("null server callback", __FILE__, __LINE__, ret,
+			XLOG_LEVEL_W);
 		return ret;
 	}
 
 	if (NULL == session_callback) {
 		ret = -xsocket::error::NO_SERVER_CB;
-#if 	!defined(NO_X_LOGFILE)
-		xlog::AppendV2("null session callback", __FILE__, __LINE__, ret);
-#endif
+		xlog::AppendV2("null session callback", __FILE__, __LINE__, ret,
+			XLOG_LEVEL_W);
 		return ret;
 	}
 
