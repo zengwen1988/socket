@@ -25,12 +25,7 @@ int xsocket::SockServerHelper::startServer (
 	xsocket::OnSession * session_callback)
 {
 	int ret;
-
-#if defined(XSOCKET_LOGLEVEL)
-	/* trace */ char dmsg[128];
-	snprintf(dmsg, 127, "func: %s", __func__); dmsg[127] = '\0';
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_V);
-#endif
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_V);
 
 	if (NULL == server_callback) {
 		ret = -xsocket::error::NO_SERVER_CB;
@@ -46,22 +41,20 @@ int xsocket::SockServerHelper::startServer (
 		return ret;
 	}
 
-#if	0
-	WORD versionRequested;
-	WSADATA dt;
-
-	versionRequested = MAKEWORD(1,1);
-	/* load winsocket dll */
-	ret = WSAStartup(versionRequested, &dt);
-#endif
+	// #if	0
+	// 	WORD versionRequested;
+	// 	WSADATA dt;
+	//
+	// 	versionRequested = MAKEWORD(1,1);
+	// 	/* load winsocket dll */
+	// 	ret = WSAStartup(versionRequested, &dt);
+	// #endif
 	ret = xsocket::core::InitSocketEnvironment();
 
 	if (0 != ret) {
 		ret = -xsocket::error::SOCK_INIT_FAIL;
-#if 	!defined(NO_X_LOGFILE)
-		xlog::AppendV2("xsocket::core::InitSocketEnvironment fail",
-			__FILE__, __LINE__, ret);
-#endif
+		xlog::AppendV2("FATAL: xsocket::core::InitSocketEnvironment fail",
+			__FILE__, __LINE__, ret, XLOG_LEVEL_F);
 		return -ret;
 	}
 
@@ -75,9 +68,8 @@ int xsocket::SockServerHelper::startServer (
 
 	if (sockfd < 0) {
 		ret = -errno;
-#if 	!defined(NO_X_LOGFILE)
-		xlog::AppendV2("socket fail", __FILE__, __LINE__, ret);
-#endif
+		xlog::AppendV2("FATAL: socket fail", __FILE__, __LINE__, ret,
+			XLOG_LEVEL_F);
 		return ret;/* create socket fail */
 	}
 
@@ -85,9 +77,8 @@ int xsocket::SockServerHelper::startServer (
 
 	if (ret < 0) {
 		ret = -errno;
-#if 	!defined(NO_X_LOGFILE)
-		xlog::AppendV2("bind fail", __FILE__, __LINE__, ret);
-#endif
+		xlog::AppendV2("FATAL: bind fail", __FILE__, __LINE__, ret,
+			XLOG_LEVEL_F);
 		goto bind_fail;
 	}
 
@@ -95,9 +86,8 @@ int xsocket::SockServerHelper::startServer (
 
 	if (ret < 0) {
 		ret = -errno;
-#if 	!defined(NO_X_LOGFILE)
-		xlog::AppendV2("lsiten fail", __FILE__, __LINE__, ret);
-#endif
+		xlog::AppendV2("FATAL: lsiten fail", __FILE__, __LINE__, ret,
+			XLOG_LEVEL_F);
 		goto listen_fail;
 	}
 
@@ -112,13 +102,14 @@ int xsocket::SockServerHelper::startServer (
 		goto start_accept_fail;
 	}
 
-	return  0;/* success */
+	return  sockfd;/* success sockfd > 0 */
 
 start_accept_fail:
 listen_fail:
 bind_fail:
 	xsocket::core::ShutdownSocket(sockfd, xsocket::ShutdownHow::RDWR);
 	xsocket::core::CloseSocket(sockfd);
-	return ret;
+	if (ret > 0) { ret = -ret; } else if (0 == ret) { ret = -1; }
+	return ret;/* < 0 */
 
 }
