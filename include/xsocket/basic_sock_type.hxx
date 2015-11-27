@@ -55,6 +55,9 @@
 // #	include <WinSock2.h> /* sockaddr_in */
 #endif
 
+#include <string>
+
+
 #define XSOCKET_MAXIPLEN (28)
 
 namespace xsocket {
@@ -182,5 +185,10 @@ struct sockaddr_in {
 #endif
 // #include <winsock.h>
 #endif
+
+namespace xsocket {
+	typedef std::string (ip_t) (void);
+	typedef uint16_t (port_t) (void);
+}
 
 #endif /* XSOCKET_BASIC_SOCK_TYPE_HXX__ */
