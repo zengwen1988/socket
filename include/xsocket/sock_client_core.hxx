@@ -91,8 +91,7 @@ public:
 	static int startConnectBySockfd(int sockfd,
 		xsocket::SockStartConnParams * params);
 	/* TODO: add stop */
-	static int startConnectBySockfdV2(int sockfd,
-		xsocket::SockStartConnParams * params);
+	static int startConnectBySockfdV2(xsocket::SockStartConnParams * params);
 	static int startReceiveFromPeer(
 		xsocket::SockClientRecviveParams * params);
 };
