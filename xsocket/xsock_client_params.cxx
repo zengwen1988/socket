@@ -17,6 +17,21 @@ xsocket::SockStartConnParams::SockStartConnParams (
 	: _timeout(timeout), _on_client_socket(ocs)
 {
 	memcpy(&(this->_target), &target, sizeof(xsocket::NetProtocol));
+	this->_ip = NULL;
+	this->_port = NULL;
+}
+
+/* For v0x00000001 only */
+xsocket::SockStartConnParams::SockStartConnParams (
+	const uint32_t timeout,
+	xsocket::ip_t * ip,
+	xsocket::port_t * port,
+	xsocket::OnClientSocket * ocs)
+	: _timeout(timeout), _on_client_socket(ocs)
+{
+	memset(&(this->_target), 0, sizeof(xsocket::NetProtocol));
+	this->_ip = ip;
+	this->_port = port;
 }
 
 /*
@@ -31,6 +46,17 @@ xsocket::internal::SockConnParams::SockConnParams (int sockfd, uint32_t timeout,
 	memcpy(&(this->_target), &target, sizeof(xsocket::NetProtocol));
 }
 
+xsocket::internal::SockConnParams::SockConnParams (
+	const uint32_t timeout,
+	xsocket::ip_t * ip,
+	xsocket::port_t * port,
+	xsocket::OnClientSocket * on_client_sock)
+	: _sockfd(-1), _timeout(timeout), _on_client_socket(on_client_sock)
+{
+	memset(&(this->_target), 0, sizeof(xsocket::NetProtocol));
+	this->_ip = ip;
+	this->_port = port;
+}
 
 xsocket::SockClientRecviveParams::SockClientRecviveParams (int sockfd,
 	xsocket::OnClientSocket * on_socket, const xsocket::NetProtocol& from)
