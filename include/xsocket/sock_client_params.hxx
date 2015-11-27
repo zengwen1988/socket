@@ -27,6 +27,12 @@ public:
 		uint32_t timeout,
 		const xsocket::NetProtocol& host,
 		xsocket::OnClientSocket * ocs);
+	/* For v0x00000001 only */
+	SockStartConnParams(
+		const uint32_t timeout,
+		xsocket::ip_t * ip,
+		xsocket::port_t * port,
+		xsocket::OnClientSocket * ocs);
 
 public:
 	inline uint32_t timeout (void) const {
@@ -38,11 +44,17 @@ public:
 	inline xsocket::OnClientSocket * on_client_socket (void) const {
 		return this->_on_client_socket;
 	}
+	inline xsocket::ip_t * ip (void) const { return this->_ip; }
+	inline xsocket::port_t * port (void) const { return this->_port; }
 
 private:
 	uint32_t _timeout;/* second */
 	xsocket::NetProtocol _target;
 	xsocket::OnClientSocket * _on_client_socket;
+
+	/* For v0x00000001 only */
+	xsocket::ip_t * _ip;
+	xsocket::port_t * _port;
 }; /* class xsocket::SockStartConnParams */
 
 } /* namespace xsocket */
@@ -64,6 +76,11 @@ protected:
 	SockConnParams(int sockfd, uint32_t timeout,
 		const xsocket::NetProtocol& target,
 		xsocket::OnClientSocket * on_client_sock);
+	SockConnParams(
+		const uint32_t timeout,
+		xsocket::ip_t * ip,
+		xsocket::port_t * port,
+		xsocket::OnClientSocket * on_client_sock);
 
 protected:
 	inline uint32_t sockfd (void) { return this->_sockfd; }
@@ -76,6 +93,21 @@ protected:
 	}
 	inline xsocket::core::internal::ConnectToServerBySockfd&
 		routine (void) { return this->_routine; }
+	/* For v0x00000001 only */
+	inline std::string ip (void) {
+		if (NULL != this->_ip) {
+			return this->_ip();
+		} else {
+			return "";
+		}
+	}
+	inline uint16_t port (void) {
+		if (NULL != this->_port) {
+			return this->_port();
+		} else {
+			return 0;
+		}
+	}
 
 private:
 	int _sockfd;
@@ -83,6 +115,9 @@ private:
 	xsocket::OnClientSocket * _on_client_socket;
 	xsocket::NetProtocol _target;
 	xsocket::core::internal::ConnectToServerBySockfd _routine;
+	/* For v0x00000001 only */
+	xsocket::ip_t * _ip;
+	xsocket::port_t * _port;
 }; /* class xsocket::internal::SockConnParams */
 
  } /* namespace xsocket::internal */
