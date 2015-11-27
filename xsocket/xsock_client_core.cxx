@@ -55,9 +55,7 @@
 #include <sys/stat.h>
 #include <netdb.h> /* gethostbyname */
 
-#if defined(XSOCKET_LOGLEVEL)
-#	include <x_logfile.hxx>
-#endif
+#include <x_logfile.hxx>
 
 
 xsocket::OnClientSocket::OnClientSocket (void)
@@ -99,6 +97,7 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 	SockOnConnnect on_con;
 	struct timeval tv_select;
 	char msg[128];
+	std::string ip;
 
 	/* check */
 	if (NULL == arg) {
@@ -116,16 +115,39 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 	}
 
 	/* real dump*/
-	sockfd = cps->sockfd();
+	if (0x00000001 != this->ver()) {
+		sockfd = cps->sockfd();
+		memcpy(&target, cps->target(), sizeof(xsocket::NetProtocol));
+		memcpy(&(on_con.info), &target, sizeof(xsocket::NetProtocol));
+		on_con.sockfd = sockfd;
+	} else {
+		sockfd = -1;
+	}
 	timeout = cps->timeout();
-	memcpy(&target, cps->target(), sizeof(xsocket::NetProtocol));
-
-	code = 0;
 	on_con.code = 0;
-	memcpy(&(on_con.info), &target, sizeof(xsocket::NetProtocol));
-	on_con.sockfd = sockfd;
+	code = 0;
 
 	do {
+		if (0x00000001 == this->ver()) {
+			ip = cps->ip();
+			strncpy(target.ip, ip.c_str(), XSOCKET_MAXIPLEN);
+			target.port = cps->port();
+			snprintf(msg, 127, "To connect server: %s:%u", target.ip,
+				target.port);
+			msg[127] = '\0';
+			xlog::AppendV2(msg, __FILE__, __LINE__, 0, XLOG_LEVEL_I);
+			/* FIXME valid ip first */
+			sockfd = xsocket::core::GetSockfdByHost(target);
+			if (sockfd < 0) {
+				xlog::AppendV2("GetSockfdByHost fail", __FILE__, __LINE__,
+					sockfd);
+				goto retry_later;
+			} else {
+				memcpy(&(on_con.info), &target, sizeof(xsocket::NetProtocol));
+				on_con.sockfd = sockfd;
+			}
+		}
+
 		/* wait(select) writeable */
 		FD_ZERO(&fdwrite);
 		FD_SET(sockfd, &fdwrite);
@@ -175,20 +197,19 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 			}
 		}
 
-		xlog::AppendV2("success", __FILE__,
-			__LINE__, 0, XLOG_LEVEL_I);
+		xlog::AppendV2("success", __FILE__, __LINE__, 0, XLOG_LEVEL_I);
 		break;/* ok */
 
 retry_later:
 		xlog::AppendV2("ver.0x00000001: auto reconnect in 30 s.", __FILE__,
 			__LINE__, 0, XLOG_LEVEL_I);
-		xsocket::core::CloseSocket(sockfd);
-		sockfd = -1;
+		if (sockfd > 0) {
+			xsocket::core::CloseSocket(sockfd);
+			sockfd = -1;
+		}
 		usleep(10 * 1e6);
 		usleep(10 * 1e6);
 		usleep(10 * 1e6);
-		sockfd = xsocket::core::GetSockfdByHost(target);
-		usleep(500 * 1e3);
 	} while(true);
 
 	/* final ok */
@@ -311,15 +332,12 @@ sconnfail:
 	return -ret;/* fail */
 } /* xsocket::SockClientCore::startConnectBySockfd */
 
-int xsocket::core::ClientHelper::startConnectBySockfdV2 (int sockfd,
+int xsocket::core::ClientHelper::startConnectBySockfdV2 (
 	xsocket::SockStartConnParams * params)
 {
 	int ret;
 
 	/* check */
-	if (sockfd < 0) {
-		return -xsocket::error::SOCKFD_INVAL;
-	}
 	if (NULL == params) {
 		return -xsocket::error::SOCKARG_INVAL;
 	}
@@ -329,9 +347,10 @@ int xsocket::core::ClientHelper::startConnectBySockfdV2 (int sockfd,
 	 * 2 start fail: cps will be release here
 	 */
 	xsocket::internal::SockConnParams * cps
-		= new xsocket::internal::SockConnParams(sockfd,
+		= new xsocket::internal::SockConnParams(
 		params->timeout(),
-		params->target(),
+		params->ip(),
+		params->port(),
 		params->on_client_socket());
 
 	xsocket::core::internal::ConnectToServerBySockfd& rr = cps->routine();
@@ -403,10 +422,8 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 	xsocket::SockRecved rcv;
 
 	if (NULL == arg) {
-#if		!defined(NO_X_LOGFILE)
 		xlog::AppendV2("ERRO: NULL XSockReceiveParams params !!", __FILE__,
 			__LINE__, -EINVAL);
-#endif
 		return (void *)-xsocket::error::SOCKARG_INVAL;
 	}
 
@@ -426,27 +443,22 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 	rcv.fd = sockfd;
 	memcpy(&(rcv.info), scr->from(), sizeof(xsocket::NetProtocol));
 
-	while (0 == teminate)
-	{
+	while (0 == teminate) {
 		bzero(buf, 4096);
 
 		ret = xsocket::core::RecvFromSockfd(
 			sockfd, buf, 0, 4096, 15 * 1e6, 15 * 1e6);
 
 		if ((ret < 0) && (ret > -1000)) {
-#if			!defined(NO_X_LOGFILE)
 			xlog::AppendV2("FAIL: will finish", __FILE__, __LINE__, ret);
-#endif
 			fb.code = ret;/* fail */
 			on_socket->didFinish(fb);
 
 			goto end;
 		} else if (0 == ret) {
 			/* disconnected */
-#if			!defined(NO_X_LOGFILE)
 			xlog::AppendV2("will finish: peer disconnected", __FILE__,
 				__LINE__, 0);
-#endif
 			fb.code = 0;
 			on_socket->didFinish(fb);
 			goto end;
@@ -463,10 +475,10 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 		teminate = on_socket->shouldTeminateRecv(sockfd);
 	}
 
-#if	!defined(NO_X_LOGFILE)
 	xlog::AppendV2("will finish: user terminate", __FILE__, __LINE__, 1);
-#endif
 	fb.code = 1;/* user terminate */
+	xsocket::core::ShutdownSocket(sockfd, xsocket::ShutdownHow::RDWR);
+	xsocket::core::CloseSocket(sockfd);
 	on_socket->didFinish(fb);
 
 end:
@@ -476,9 +488,7 @@ end:
 	}
 
 	if (NULL != on_socket) {
-#if		defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x18)
 		xlog::AppendV2("i'll gc on socket", __FILE__, __LINE__, 0);
-#endif
 		if (NULL != on_socket->gc()) {
 			on_socket->gc()->gc(on_socket);
 		}
