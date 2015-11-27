@@ -180,13 +180,13 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 		break;/* ok */
 
 retry_later:
-		xlog::AppendV2("ver.0x00000001: auto reconnect in 15 s.", __FILE__,
+		xlog::AppendV2("ver.0x00000001: auto reconnect in 30 s.", __FILE__,
 			__LINE__, 0, XLOG_LEVEL_I);
 		xsocket::core::CloseSocket(sockfd);
 		sockfd = -1;
-		usleep(5 * 1e6);
-		usleep(5 * 1e6);
-		usleep(5 * 1e6);
+		usleep(10 * 1e6);
+		usleep(10 * 1e6);
+		usleep(10 * 1e6);
 		sockfd = xsocket::core::GetSockfdByHost(target);
 		usleep(500 * 1e3);
 	} while(true);

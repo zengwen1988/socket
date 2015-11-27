@@ -53,6 +53,7 @@ namespace xsocket { namespace core { namespace internal {
 
 /* class xsocket::core::internal::ConnectToServerBySockfd */
 class ConnectToServerBySockfd: public pthreadx::SimpleThread {
+public:
 ConnectToServerBySockfd (void) { this->_ver = 0x00000000; }
 protected:
 	/* override */
