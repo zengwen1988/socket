@@ -59,7 +59,8 @@ public:
 		uint32_t timeout, /* second */
 		xsocket::OnClientSocket * on_socket/* client socket callback */);
 	static int startConnectByHostV2(
-		const xsocket::NetProtocol& target,
+		xsocket::ip_t * ip,
+		xsocket::port_t * port,
 		uint32_t timeout, /* second */
 		xsocket::OnClientSocket * on_socket/* client socket callback */);
 
