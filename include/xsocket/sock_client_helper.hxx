@@ -58,6 +58,10 @@ public:
 		const xsocket::NetProtocol& target,
 		uint32_t timeout, /* second */
 		xsocket::OnClientSocket * on_socket/* client socket callback */);
+	static int startConnectByHostV2(
+		const xsocket::NetProtocol& target,
+		uint32_t timeout, /* second */
+		xsocket::OnClientSocket * on_socket/* client socket callback */);
 
 	static int startConnectByName(const char * name, uint16_t port,
 		uint32_t timeout, /* second */

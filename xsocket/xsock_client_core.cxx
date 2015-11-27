@@ -85,7 +85,7 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 {
 	int code;
 	int ret;
-#if defined(__APPLE__)
+#	if defined(__APPLE__)
 	int set;
 #	endif
 
@@ -125,71 +125,87 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 	memcpy(&(on_con.info), &target, sizeof(xsocket::NetProtocol));
 	on_con.sockfd = sockfd;
 
-	/* wait(select) writeable */
-	FD_ZERO(&fdwrite);
-	FD_SET(sockfd, &fdwrite);
+	do {
+		/* wait(select) writeable */
+		FD_ZERO(&fdwrite);
+		FD_SET(sockfd, &fdwrite);
 
-	tv_select.tv_sec = timeout;
-	tv_select.tv_usec = 0;
+		tv_select.tv_sec = timeout;
+		tv_select.tv_usec = 0;
 
-	ret = select(sockfd + 1, NULL, &fdwrite, NULL, &tv_select);
+		ret = select(sockfd + 1, NULL, &fdwrite, NULL, &tv_select);
 
-	if (ret < 0) {
-		ret = errno;
-
-#if		!defined(NO_X_LOGFILE)
-		xlog::AppendV2("select writable fail", __FILE__, __LINE__, -ret);
-#endif
-
-		code = -ret;
-		goto select_fail;
-	} else if (0 == ret) {
-		/* timeout */
-		code = -ETIMEDOUT;
-
-#if		!defined(NO_X_LOGFILE)
-		xlog::AppendV2("connnect timeout", __FILE__, __LINE__, -ETIMEDOUT);
-#endif
-
-		goto select_to;
-	} else {
-		/* final check sokcet error */
-		int errlen = sizeof(ret);
-		getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &ret,
-			(socklen_t *)&errlen);
-
-		if (0 != ret) {
-			/* connect fail */
-			errno = ret;
+		if (ret < 0) {
+			ret = errno;
+			xlog::AppendV2("select writable fail", __FILE__, __LINE__, -ret);
 			code = -ret;
-#if			defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x10)
-			snprintf(msg, 127, "FAIL: select: %s", strerror(ret));
-			msg[127] = '\0';
-			xlog::AppendV2(msg, __FILE__, __LINE__, code);
-#endif
+			if (0x00000001 == this->ver()) {
+				goto retry_later;
+			} else {
+				goto select_fail;
+			}
+		} else if (0 == ret) {
+			/* timeout */
+			code = -ETIMEDOUT;
+			xlog::AppendV2("connnect timeout", __FILE__, __LINE__,
+				this->ver());
+			if (0x00000001 == this->ver()) {
+				goto retry_later;
+			} else {
+				goto select_to;
+			}
+		} else {
+			/* final check sokcet error */
+			int errlen = sizeof(ret);
+			getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &ret,
+				(socklen_t *)&errlen);
 
-			goto select_fail;
+			if (0 != ret) {
+				/* connect fail */
+				errno = ret;
+				code = -ret;
+				snprintf(msg, 127, "FAIL: select: %s", strerror(ret));
+				msg[127] = '\0';
+				xlog::AppendV2(msg, __FILE__, __LINE__, code);
+				if (0x00000001 == this->ver()) {
+					goto retry_later;
+				} else {
+					goto select_fail;
+				}
+			}
 		}
-	}
+
+		xlog::AppendV2("success", __FILE__,
+			__LINE__, 0, XLOG_LEVEL_I);
+		break;/* ok */
+
+retry_later:
+		xlog::AppendV2("ver.0x00000001: auto reconnect in 15 s.", __FILE__,
+			__LINE__, 0, XLOG_LEVEL_I);
+		xsocket::core::CloseSocket(sockfd);
+		sockfd = -1;
+		usleep(5 * 1e6);
+		usleep(5 * 1e6);
+		usleep(5 * 1e6);
+		sockfd = xsocket::core::GetSockfdByHost(target);
+		usleep(500 * 1e3);
+	} while(true);
 
 	/* final ok */
 
-#if defined(__APPLE__)
+#	if defined(__APPLE__)
 	set = 1;
 	setsockopt(sockfd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set,
 		sizeof(int));
-#	endif
-
+#	endif /* defined(__APPLE__) */
 	rcvparams = new xsocket::SockClientRecviveParams(sockfd,
 		on_socket, target);
 
 	/* start on received thread */
 	ret = xsocket::core::ClientHelper::startReceiveFromPeer(rcvparams);
 	if (0 != ret) {
-#if		!defined(NO_X_LOGFILE)
 		xlog::AppendV2("FAIL: start_receive_from_peer", __FILE__, __LINE__,
 			ret);
-#endif
 		code = ret;
 		delete rcvparams;
 		rcvparams = NULL;
@@ -204,17 +220,12 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 	on_socket->onConnect(on_con);
 
 	if (0 != code) {
-#if		defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x10)
 		xlog::AppendV2("i'll delete on_socket", __FILE__, __LINE__, ret);
-#endif
 		delete on_socket;
 		on_socket = NULL;
 	}
 
-#if	!defined(NO_X_LOGFILE)
 	xlog::AppendV2("end success", __FILE__, __LINE__, ret);
-#endif
-
 	/* final delete */
 	if (NULL != cps) {
 		delete cps;
@@ -229,9 +240,7 @@ select_fail:
 	on_socket->onConnect(on_con);
 
 	if (NULL != on_socket) {
-#if		defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x10)
 		xlog::AppendV2("i'll delete on_socket", __FILE__, __LINE__, code);
-#endif
 		delete on_socket;
 		on_socket = NULL;
 	}
@@ -302,6 +311,47 @@ sconnfail:
 	return -ret;/* fail */
 } /* xsocket::SockClientCore::startConnectBySockfd */
 
+int xsocket::core::ClientHelper::startConnectBySockfdV2 (int sockfd,
+	xsocket::SockStartConnParams * params)
+{
+	int ret;
+
+	/* check */
+	if (sockfd < 0) {
+		return -xsocket::error::SOCKFD_INVAL;
+	}
+	if (NULL == params) {
+		return -xsocket::error::SOCKARG_INVAL;
+	}
+
+	/*
+	 * 1 start success: cps will be release in thread
+	 * 2 start fail: cps will be release here
+	 */
+	xsocket::internal::SockConnParams * cps
+		= new xsocket::internal::SockConnParams(sockfd,
+		params->timeout(),
+		params->target(),
+		params->on_client_socket());
+
+	xsocket::core::internal::ConnectToServerBySockfd& rr = cps->routine();
+	rr.set_ver(0x00000001);
+	ret = rr.start(cps);
+
+	if (0 != ret) {
+		rr.nowFinish();
+		delete cps;
+		cps = NULL;
+
+		goto sconnfail;
+	} else {
+		/*  success */
+		return 0;
+	}
+
+sconnfail:
+	return -ret;/* fail */
+} /* xsocket::SockClientCore::startConnectBySockfd */
 
 /*
  * NAME member func xsocket::SockClientCore::startReceiveFromPeer

@@ -60,16 +60,12 @@
  */
 int xsocket::core::GetSockfdByHost (const xsocket::NetProtocol& host)
 {
-
 	int ret;
 	struct sockaddr_in sa;
 	int sockfd;
 	uint32_t ipv4;
 
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
-	xlog::AppendV2("xsocket::core::GetSockfdByHost", __FILE__, __LINE__,
-		0);
-#endif
+	xlog::AppendV2("xsocket::core::GetSockfdByHost", __FILE__, __LINE__, 0);
 
 	/*
 	 * conv and check
@@ -77,9 +73,7 @@ int xsocket::core::GetSockfdByHost (const xsocket::NetProtocol& host)
 	 */
 	ret = ipv4_to_netu32_r(&ipv4, host.ip);
 	if (0 != ret) {
-#if 	defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x18)
 		xlog::AppendV2("Invalid IPv4", __FILE__, __LINE__, ret);
-#endif
 		return ret;
 	}
 
@@ -101,11 +95,11 @@ int xsocket::core::GetSockfdByHost (const xsocket::NetProtocol& host)
 	/* connect */
 	ret = connect(sockfd, (const struct sockaddr *)&sa, sizeof(sa));
 
-#if defined(EINPROGRESS)
+#	if defined(EINPROGRESS)
 	if ((ret < 0) && (EINPROGRESS != errno)) {
-#else
+#	else
 	if ((ret < 0) && (115 != errno)) {
-#endif
+#	endif
 		ret = errno;
 
 		goto conn_fail;

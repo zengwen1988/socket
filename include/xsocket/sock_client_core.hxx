@@ -53,16 +53,24 @@ namespace xsocket { namespace core { namespace internal {
 
 /* class xsocket::core::internal::ConnectToServerBySockfd */
 class ConnectToServerBySockfd: public pthreadx::SimpleThread {
+ConnectToServerBySockfd (void) { this->_ver = 0x00000000; }
 protected:
 	/* override */
-	virtual void * run (void *);
+	virtual void * run(void *);
+
+public:
+	inline void set_ver (uint32_t v) { this->_ver = v; }
+	inline uint32_t ver (void) const { return this->_ver; }
+
+private:
+	uint32_t _ver;
 };
 
 /* class xsocket::core::internal::ClientRecevier */
 class ClientRecevier: public pthreadx::SimpleThread {
 protected:
 	/* override */
-	virtual void * run (void *);
+	virtual void * run(void *);
 };
 
 } } } /* namespace xsocket .. */
@@ -81,9 +89,11 @@ class ClientHelper {
 public:
 	static int startConnectBySockfd(int sockfd,
 		xsocket::SockStartConnParams * params);
+	/* TODO: add stop */
+	static int startConnectBySockfdV2(int sockfd,
+		xsocket::SockStartConnParams * params);
 	static int startReceiveFromPeer(
 		xsocket::SockClientRecviveParams * params);
-
 };
 
 } } /* namespace xsocket .. */
