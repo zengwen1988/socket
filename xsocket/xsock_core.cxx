@@ -254,20 +254,20 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 	int32_t start, size_t max,
 	uint32_t wr_us, uint32_t r_us)
 {
+	static uint32_t show = 0;
 	struct timeval timeout, timeout_r;
 	fd_set readfds;
 	int nfds, ret;
 
-	char dmsg[256];
-	snprintf(dmsg, 255,
-		"fd: %d: buf: %p start: %d max: %zu", sockfd,
-		buf, start, max);
-	dmsg[255] = '\0';
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_I);
-	snprintf(dmsg, 255,
-		"wr_us: %u r_us: %u", wr_us, r_us);
-	dmsg[255] = '\0';
-	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_I);
+	++show;
+	if (0 == (show % 5)) {
+		char dmsg[256];
+		snprintf(dmsg, 255,
+			"fd: %d. buf: %p. start: %d. max: %zu. wr_us: %u. r_us: %u",
+			sockfd, buf, start, max, wr_us, r_us);
+		dmsg[255] = '\0';
+		xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_I);
+	}
 
 	/* set select timeout */
 	timeout.tv_sec = (long int)(wr_us / 1e6);
@@ -303,39 +303,39 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 
 	/* FIXME: check ret */
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,
-#if		!defined(WIN32)
+#		if !defined(WIN32)
 		&timeout_r,
 		(socklen_t)sizeof(struct timeval));
-#else
+#		else
 		(const char *)(&timeout_r),
 		sizeof(struct timeval));
-#endif
+#		endif
 
 	/* XXX-FIXED: MSG_WAITALL -> MSG_DONTWAIT iOS ! */
-#if		!defined(WIN32)
+#	if !defined(WIN32)
 	ret = (int)recv(sockfd, buf + start, max,
 		MSG_DONTWAIT);
-#else
+#	else
 	ret = (int)recv(sockfd, (char *)(buf + start), max,
 		0);
-#endif
+#	endif
 
 	/* FIXME: check if here ok */
 	if ((ret < 0)
-#if		!defined(WIN32)
+#		if !defined(WIN32)
 		&& (EAGAIN == errno)) {
-#else
+#		else
 		&& (11 == errno)) {
-#endif
+#		endif
 		/* recv timeout */
 		ret = -1003;
 		goto end;
 	} else if ((ret < 0)
-#if		!defined(WIN32)
+#		if !defined(WIN32)
 		&& (EWOULDBLOCK == errno)) {
-#else
+#		else
 		&& (11 == errno)) {
-#endif
+#		endif
 		/* recv: EWOULDBLOCK */
 		xlog::AppendV2("recv fail", __FILE__, __LINE__, -errno);
 		ret = -2;
@@ -345,7 +345,7 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 		ret = -3;
 		goto end;
 	} else if (0 == ret) {
-		xlog::AppendV2("peer disconnected", __FILE__, __LINE__, 1);
+		xlog::AppendV2("Peer disconnected", __FILE__, __LINE__, 1);
 	}
 
 end:
