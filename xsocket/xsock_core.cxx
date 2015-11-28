@@ -48,7 +48,6 @@
 #endif
 #include <fcntl.h> /* F_GETFL .. */
 
-
 #include <x_logfile.hxx>
 
 #include <simple_net_conv.h>
@@ -224,11 +223,9 @@ int xsocket::core::ShutdownSocket (int sockfd,
 	int ret = shutdown(sockfd, (int)how);
 	int e = errno;
 
-#if	defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
 	char msg[64];
 	snprintf(msg, 63, "FAIL: shutdown: %s", strerror(e));
 	xlog::AppendV2(msg, __FILE__, __LINE__, ret);
-#endif
 
 	if (0 != ret) {
 		return (0 != e) ? -e : -1;
@@ -253,7 +250,6 @@ int xsocket::core::CloseSocket (int sockfd)
 #endif
 }
 
-
 int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 	int32_t start, size_t max,
 	uint32_t wr_us, uint32_t r_us)
@@ -262,17 +258,16 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 	fd_set readfds;
 	int nfds, ret;
 
-#if !defined(NO_X_LOGFILE) && defined(ENABLE_SOCK_DEBUG)
 	char dmsg[256];
 	snprintf(dmsg, 255,
 		"fd: %d: buf: %p start: %d max: %zu", sockfd,
 		buf, start, max);
 	dmsg[255] = '\0';
-	xlog::Append(dmsg);
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_I);
 	snprintf(dmsg, 255,
 		"wr_us: %u r_us: %u", wr_us, r_us);
-	xlog::Append(dmsg);
-#endif
+	dmsg[255] = '\0';
+	xlog::AppendV2(dmsg, __FILE__, __LINE__, 0, XLOG_LEVEL_I);
 
 	/* set select timeout */
 	timeout.tv_sec = (long int)(wr_us / 1e6);
@@ -286,10 +281,13 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 	/* selecting */
 	ret = select(nfds, &readfds, NULL, NULL, &timeout);
 	if (-1 == ret) {
+		if (EINTR == errno) {
+			/* Should again */
+			ret = -1004;
+			goto end;
+		}
 		/* error */
-#if		!defined(NO_X_LOGFILE)
 		xlog::AppendV2("select fail", __FILE__, __LINE__, -errno);
-#endif
 		ret = -1;
 		goto end;
 	} else if (0 == ret) {
@@ -339,21 +337,15 @@ int xsocket::core::RecvFromSockfd (int sockfd, uint8_t * buf,
 		&& (11 == errno)) {
 #endif
 		/* recv: EWOULDBLOCK */
-#if		!defined(NO_X_LOGFILE)
 		xlog::AppendV2("recv fail", __FILE__, __LINE__, -errno);
-#endif
 		ret = -2;
 		goto end;
 	} else if (ret <0) {
-#if		!defined(NO_X_LOGFILE)
 		xlog::AppendV2("recv fail", __FILE__, __LINE__, -errno);
-#endif
 		ret = -3;
 		goto end;
 	} else if (0 == ret) {
-#if		!defined(NO_X_LOGFILE)
 		xlog::AppendV2("peer disconnected", __FILE__, __LINE__, 1);
-#endif
 	}
 
 end:
