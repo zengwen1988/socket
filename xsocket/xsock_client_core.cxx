@@ -157,6 +157,9 @@ void * xsocket::core::internal::ConnectToServerBySockfd::run (void * arg)
 
 		ret = select(sockfd + 1, NULL, &fdwrite, NULL, &tv_select);
 
+		/* FIXME: handle EINTR here and other .. (block)
+		 * or EAGAIN of noneblock */
+
 		if (ret < 0) {
 			ret = errno;
 			xlog::AppendV2("select writable fail", __FILE__, __LINE__, -ret);
@@ -450,16 +453,20 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 			sockfd, buf, 0, 4096, 15 * 1e6, 15 * 1e6);
 
 		if ((ret < 0) && (ret > -1000)) {
-			xlog::AppendV2("FAIL: will finish", __FILE__, __LINE__, ret);
+			xlog::AppendV2("FAIL: did finish", __FILE__, __LINE__, ret);
 			fb.code = ret;/* fail */
+			xsocket::core::ShutdownSocket(sockfd, xsocket::ShutdownHow::RDWR);
+			xsocket::core::CloseSocket(sockfd);
 			on_socket->didFinish(fb);
 
 			goto end;
 		} else if (0 == ret) {
 			/* disconnected */
-			xlog::AppendV2("will finish: peer disconnected", __FILE__,
+			xlog::AppendV2("FAIL: did finish: peer disconnected", __FILE__,
 				__LINE__, 0);
 			fb.code = 0;
+			xsocket::core::ShutdownSocket(sockfd, xsocket::ShutdownHow::RDWR);
+			xsocket::core::CloseSocket(sockfd);
 			on_socket->didFinish(fb);
 			goto end;
 		} else if (ret > 0) {
