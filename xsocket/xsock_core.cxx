@@ -150,7 +150,9 @@ ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
 
 		if (w < 0) {
 			ret = -errno;
-
+			if (ret >= 0) {
+				ret = -1;
+			}
 			return (ssize_t)ret;
 		} else {
 			wo += w;
