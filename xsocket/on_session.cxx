@@ -39,9 +39,7 @@
 
 #include <xsocket/on_session.hxx>
 
-#if defined(XSOCKET_LOGLEVEL)
-#	include <x_logfile.hxx>
-#endif
+#include <x_logfile.hxx>
 
 #include <xsocket/sock_core.hxx>
 #include <xsocket/sock_session_routine.hxx>
@@ -71,15 +69,17 @@ int xsocket::OnSession::startSession (int cli_fd,
 	int svr_fd,
 	const NetProtocol& server)
 {
-#if defined(XSOCKET_LOGLEVEL) && (XSOCKET_LOGLEVEL >= 0x20)
-	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_T);
-#endif
-
+	xlog::AppendV2(__func__, __FILE__, __LINE__, 0, XLOG_LEVEL_0);
 	/* will be auto release start success */
+	/*
 	xsocket::core::internal::SockSessionRoutine * ass
 		= new xsocket::core::internal::SockSessionRoutine(cli_fd, client,
 		svr_fd, server, this);
+	*/
+	xsocket::core::internal::SockSessionRoutine::push(cli_fd, client,
+		svr_fd, server, this);
 
+	/*
 	int ret = ass->start();
 	if (ret < 0) {
 		delete ass;
@@ -88,9 +88,12 @@ int xsocket::OnSession::startSession (int cli_fd,
 		this->clis.push_back(cli_fd);
 		this->_should_exit = false;
 	}
+	*/
+	this->clis.push_back(cli_fd);
+	this->_should_exit = false;
 	/* else success: will auto release */
 
-	return ret;
+	return 0;
 }
 
 void xsocket::OnSession::closeAllClis (void)
