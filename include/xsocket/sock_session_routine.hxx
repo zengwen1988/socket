@@ -43,11 +43,15 @@
 #if !defined(XSOCKET_SESSION_ROUTINE_HXX_)
 #define XSOCKET_SESSION_ROUTINE_HXX_ (1)
 
+#include <QList>
+
 #include <posix/thread/simple_thread.hxx> /* pthreadx::SimpleThread */
 #include <xsocket/basic_sock_type.hxx>
 
 #define XSOCKET_WAIT_READABLE_TIMEOUT (15) /* second */
 #define XSOCKET_READ_TIMEOUT (15) /* second */
+
+#define XSOCKET_POOR_CHANGE (16)
 
 namespace xsocket { class OnSession; }
 
@@ -57,6 +61,9 @@ class SockSessionRoutineGC;
 
 class SockSessionRoutine: public pthreadx::SimpleThread {
 
+public:
+	static void deinit(void);
+
 /*
  * 1 new by SockServerAcceptRoutine
  * 2 delete by SockServerAcceptRoutine when start session fail
@@ -64,12 +71,33 @@ class SockSessionRoutine: public pthreadx::SimpleThread {
  *   and willFinish called
  */
 friend class xsocket::OnSession;
-
 protected:
-	/* create by xsocket::OnSession */
-	SockSessionRoutine(int cli_fd, const xsocket::NetProtocol& client,
+	static int push(int cli_fd, const xsocket::NetProtocol& client,
 		int svr_fd, const xsocket::NetProtocol& server,
 		xsocket::OnSession * on_session);
+private:
+	static void markHasNotActivited(
+		const xsocket::core::internal::SockSessionRoutine * s);
+	static void markIsRemoved(
+		const xsocket::core::internal::SockSessionRoutine * s);
+	struct XsocketReceiverPoor {
+		xsocket::core::internal::SockSessionRoutine * receiver;
+	};
+	static QList<XsocketReceiverPoor> wait_poor;
+	static QList<XsocketReceiverPoor> work_poor;
+	static bool inited;
+	static uint8_t unlocked;
+
+private:
+	SockSessionRoutine(void);
+	/* create by xsocket::OnSession */
+	/*
+	SockSessionRoutine(int cli_fd,
+		const xsocket::NetProtocol& client,
+		int svr_fd,
+		const xsocket::NetProtocol& server,
+		xsocket::OnSession * on_session);
+	*/
 
 friend class xsocket::core::internal::SockSessionRoutineGC;
 protected:
@@ -78,10 +106,14 @@ protected:
 
 protected:
 	virtual void * run(void * /* nil */);
+	void tillRunable(void);
 
 	xsocket::core::internal::SockSessionRoutineGC * gc;
 
 private:
+	bool activted;
+	bool should_deinit;
+	bool deinited;
 	int cli_fd;
 	int svr_fd;
 	xsocket::NetProtocol client;
