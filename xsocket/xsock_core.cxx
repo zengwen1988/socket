@@ -48,8 +48,8 @@
 #endif
 #include <fcntl.h> /* F_GETFL .. */
 
+#include <posix/simp_sync_mutx.h>
 #include <x_logfile.hxx>
-
 #include <simple_net_conv.h>
 
 
@@ -131,14 +131,16 @@ sock_fail:
  *   - Send start is: buf + start
  *   - NOTE: should use valid arguments
  */
+static uint8_t __send_data_unlocked = 1;
 ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
 	size_t _count)
 {
 	int ret;
 	ssize_t wo = 0;/* already wrote */
 	ssize_t w;
-	ssize_t count = static_cast<ssize_t>(_count);
+	ssize_t count = static_cast<ssize_t>(_count), fi = 0;
 
+	CAPTURE_LOCK(__send_data_unlocked);
 	while (count > wo) {
 #		if !defined(WIN32)
 		w = write(sockfd, data + start + (int)wo, count - wo);
@@ -153,13 +155,16 @@ ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
 			if (ret >= 0) {
 				ret = -1;
 			}
-			return (ssize_t)ret;
+			fi = (ssize_t)ret;
+			goto end;
 		} else {
 			wo += w;
 		}
 	}
-
-	return wo;
+	fi = wo;
+end:
+	RELEASE_LOCK(__send_data_unlocked);
+	return fi;
 }
 
 

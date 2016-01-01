@@ -242,6 +242,9 @@ void xsocket::core::internal::SockSessionRoutine::tillRunable (void)
 	}
 }
 
+/*
+static uint8_t __recv_unlocked = 1;
+*/
 #if 1
 void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 {
@@ -421,12 +424,14 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 				 */
 				errno = 0;
 				/* ret = recv(cli_fd, rcved.data, 4096, MSG_WAITALL); */
+				/* CAPTURE_LOCK(__recv_unlocked); */
 #				if !defined(WIN32)
 				ret = recv(cli_fd, rcved.data, 4096, MSG_DONTWAIT);
 #				else
 				ret = recv(cli_fd, reinterpret_cast<char *>(rcved.data), 4096,
 					0);
 #				endif
+				/* RELEASE_LOCK(__recv_unlocked); */
 
 				if ((ret < 0) && (EAGAIN == errno)) {
 					xlog::AppendV2("recv timeout", __FILE__, __LINE__, 0,
@@ -468,20 +473,26 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 				xlog::AppendV2("show", __FILE__, __LINE__, cli_fd,
 					XLOG_LEVEL_V);
 				/* Show when need */
-				for (i = 0; i < rcved_bytes; ++i) {
-					fprintf(stdout, "0x%02x ", rcved.data[i]);
-					if (0 == ((i + 1) % 16)) {
-						fprintf(stdout, "\n");
-					}
-				}
+				// for (i = 0; i < rcved_bytes; ++i) {
+				// 	fprintf(stdout, "0x%02x ", rcved.data[i]);
+				// 	if (0 == ((i + 1) % 16)) {
+				// 		fprintf(stdout, "\n");
+				// 	}
+				// }
 
-				if (0 != (i % 16)) {
-					fprintf(stdout, "\n");
-				}
+				// if (0 != (i % 16)) {
+				// 	fprintf(stdout, "\n");
+				// }
 				/*
 				 * tell/callback external
 				 */
+				if (rcved_bytes > 4095) {
+					rcved_bytes = 4095;
+				}
 				rcved.count = rcved_bytes;
+				rcved.data[4095] = '\0';
+				xlog::AppendV2((char *)rcved.data, __FILE__, __LINE__,
+					cli_fd, XLOG_LEVEL_V);
 				os->onReceived(rcved);
 			}
 			xlog::AppendV2("show done", __FILE__, __LINE__, cli_fd,
