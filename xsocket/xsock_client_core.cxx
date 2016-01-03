@@ -419,7 +419,7 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 	int sockfd;
 	bool teminate;
 	xsocket::OnClientSocket * on_socket;
-	uint8_t * buf;
+	uint8_t * buf = NULL;
 	xsocket::SockDidFinish fb;
 	xsocket::SockClientRecviveParams * scr;
 	xsocket::SockRecved rcv;
@@ -490,12 +490,22 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 
 end:
 	if (NULL != scr) {
+		xlog::AppendV2("Will delete scr", __FILE__, __LINE__, sockfd,
+			XLOG_LEVEL_I);
 		delete scr;
 		scr = NULL;
 	}
 
+	if (NULL != buf) {
+		xlog::AppendV2("Will delete buf", __FILE__, __LINE__, sockfd,
+			XLOG_LEVEL_I);
+		delete buf;
+		buf = NULL;
+	}
+
 	if (NULL != on_socket) {
-		xlog::AppendV2("i'll gc on socket", __FILE__, __LINE__, 0);
+		xlog::AppendV2("Will delete(gs) on_socket", __FILE__, __LINE__, sockfd,
+			XLOG_LEVEL_I);
 		if (NULL != on_socket->gc()) {
 			on_socket->gc()->gc(on_socket);
 		}

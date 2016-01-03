@@ -92,8 +92,6 @@ struct SockDidFinish {
 };
 
 struct SockRecved {
-	/* For client and server */
-	uint8_t * data;
 	int count;
 	/* self fd */
 	int fd;
@@ -102,6 +100,8 @@ struct SockRecved {
 	/* self */
 	xsocket::NetProtocol info;
 	xsocket::NetProtocol peer;
+	/* For client and server */
+	uint8_t * data;
 };
 
 } /* namespace xsocket */

@@ -148,7 +148,7 @@ ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
 		w = send(sockfd, (const char *)(data + start + (int)wo), count - wo,
 			0);/* 0x40 no block, now 0 */
 #		endif
-		xlog::AppendV2("sent", __FILE__, __LINE__, w, XLOG_LEVEL_I);
+		xlog::AppendV2("sent", __FILE__, __LINE__, sockfd, XLOG_LEVEL_I);
 
 		if (w < 0) {
 			ret = -errno;
