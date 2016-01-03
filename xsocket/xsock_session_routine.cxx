@@ -317,8 +317,10 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 		}
 
 		while (! tmi) {
+			/*
 			xlog::AppendV2("this run", __FILE__, __LINE__, cli_fd,
 				XLOG_LEVEL_V);
+			*/
 
 			/* set select timeout for readable */
 			timeout_readable.tv_sec = XSOCKET_WAIT_READABLE_TIMEOUT;
@@ -329,14 +331,18 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 			FD_SET(cli_fd, &readfds);
 			nfds = (cli_fd) + 1;
 
+			/*
 			xlog::AppendV2("before select", __FILE__, __LINE__, cli_fd,
 				XLOG_LEVEL_V);
+			*/
 
 			/* selecting */
 			ret = select(nfds, &readfds, NULL, NULL, &timeout_readable);
 
+			/*
 			xlog::AppendV2("after select", __FILE__, __LINE__, cli_fd,
 				XLOG_LEVEL_V);
+			*/
 
 			prev_ok = false;
 
@@ -351,19 +357,23 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 			} else if (0 == ret) {
 				/*
 				 * no ready and timetout
-				 */
 				xlog::AppendV2("wait readable timeout", __FILE__, __LINE__,
 					cli_fd, XLOG_LEVEL_XV);
+				 */
 			} else if (ret > 0) { /* XXX-FIXED: add > 0 */
+				/*
 				xlog::AppendV2("now readable", __FILE__, __LINE__, cli_fd,
 					XLOG_LEVEL_V);
+				*/
 				prev_ok = true;
 			}
 
 			/* check and set timeout */
 			if (prev_ok) {
+				/*
 				xlog::AppendV2("prev ok", __FILE__, __LINE__,
 					cli_fd, XLOG_LEVEL_XV);
+				*/
 				prev_ok = false;
 
 				/*
@@ -407,15 +417,18 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 					}
 				}
 			} /* if prev_ok */ else {
+				/*
 				xlog::AppendV2("prev not ok", __FILE__, __LINE__,
 					cli_fd, XLOG_LEVEL_XV);
+				*/
 			}
 
 			/* recv */
 			rcved_bytes = -1;
 			if (prev_ok) {
-				xlog::AppendV2("will recv", __FILE__, __LINE__, 0, XLOG_LEVEL_V);
 				/*
+				xlog::AppendV2("will recv", __FILE__, __LINE__, 0,
+					XLOG_LEVEL_V);
 				 * to recv and wait till timeout
 				 *
 				 * to recv till timeout
@@ -434,8 +447,10 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 				/* RELEASE_LOCK(__recv_unlocked); */
 
 				if ((ret < 0) && (EAGAIN == errno)) {
+					/*
 					xlog::AppendV2("recv timeout", __FILE__, __LINE__, 0,
 						XLOG_LEVEL_W);
+					*/
 				} else if ((ret < 0) && (EWOULDBLOCK == errno)) {
 					xlog::AppendV2("EWOULDBLOCK: recv and will teminate",
 						__FILE__, __LINE__, 0, XLOG_LEVEL_W);
@@ -453,8 +468,10 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 				} else {
 					/* success */
 					rcved_bytes = ret;
+					/*
 					xlog::AppendV2("recv success", __FILE__, __LINE__,
-					rcved_bytes, XLOG_LEVEL_V);
+						rcved_bytes, XLOG_LEVEL_V);
+					*/
 					prev_ok = true;
 				}
 			}
@@ -470,8 +487,10 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 			}
 
 			if (prev_ok && (rcved_bytes > 0)) {
+				/*
 				xlog::AppendV2("show", __FILE__, __LINE__, cli_fd,
 					XLOG_LEVEL_V);
+				*/
 				/* Show when need */
 				// for (i = 0; i < rcved_bytes; ++i) {
 				// 	fprintf(stdout, "0x%02x ", rcved.data[i]);
@@ -495,8 +514,10 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 					cli_fd, XLOG_LEVEL_V);
 				os->onReceived(rcved);
 			}
+			/*
 			xlog::AppendV2("show done", __FILE__, __LINE__, cli_fd,
 				XLOG_LEVEL_V);
+			*/
 
 			tmi = os->shouldTeminate(cli_fd);
 
@@ -510,8 +531,10 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 				goto cc;
 			}
 
+			/*
 			xlog::AppendV2("next run", __FILE__, __LINE__, cli_fd,
 				XLOG_LEVEL_V);
+			*/
 		} /* while */
 
 cc:
