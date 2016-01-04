@@ -68,6 +68,8 @@ void xsocket::core::internal::SockSessionRoutine::deinit (void)
 		}
 	}
 	usleep(500 * 1e3);
+
+	usleep(5 * 1e6);
 }
 
 int xsocket::core::internal::SockSessionRoutine::push (
