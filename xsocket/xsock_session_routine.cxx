@@ -256,7 +256,7 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 	bool tmi = false;
 	int cli_fd = -1;
 	int svr_fd = -1;
-	int i, ret, rcved_bytes;
+	int i, ret, rcved_bytes, errnum;
 	bool prev_ok;
 	struct timeval timeout_readable;
 	struct timeval timeout_rcv;
@@ -447,19 +447,27 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 					0);
 #				endif
 				/* RELEASE_LOCK(__recv_unlocked); */
+				errnum = errno;
+#				if defined(WIN32)
+				if ((ret < 0) && (0 == errnum)) {
+					errnum = WSAGetLastError();
+					xlog::AppendV2("WSAGetLastError", __FILE__, __LINE__,
+						errnum, XLOG_LEVEL_F);
+				}
+#				endif /* defined(WIN32) */
 
-				if ((ret < 0) && (EAGAIN == errno)) {
+				if ((ret < 0) && (EAGAIN == errnum)) {
 					/*
 					xlog::AppendV2("recv timeout", __FILE__, __LINE__, 0,
 						XLOG_LEVEL_W);
 					*/
-				} else if ((ret < 0) && (EWOULDBLOCK == errno)) {
+				} else if ((ret < 0) && (EWOULDBLOCK == errnum)) {
 					xlog::AppendV2("EWOULDBLOCK: recv and will teminate",
 						__FILE__, __LINE__, 0, XLOG_LEVEL_W);
 					didfi.code = -EWOULDBLOCK;
 					goto cc;
-				} else if (ret <0) {
-					ret = errno;
+				} else if (ret < 0) {
+					ret = errnum;
 					snprintf(msg, 127,
 						"FAIL: recv: %s. and will teminate",
 						strerror(ret));
