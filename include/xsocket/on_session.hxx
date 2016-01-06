@@ -94,7 +94,7 @@ public:
 	 *   -errno: client die
 	 */
 	virtual int didFinish(const SockDidFinish&) = 0;
-	virtual int onReceived(const SockRecved&) = 0;
+	virtual int onReceived(SockRecved&) = 0;
 	virtual bool shouldTeminate(int sockfd) = 0;
 
 private:

@@ -56,7 +56,7 @@
 #endif
 
 #include <string>
-
+#include <QQueue>
 
 #define XSOCKET_MAXIPLEN (28)
 
@@ -102,6 +102,8 @@ struct SockRecved {
 	xsocket::NetProtocol peer;
 	/* For client and server */
 	uint8_t * data;
+	uint8_t dump[4096];
+	QQueue<uint8_t> cache_queue;
 };
 
 } /* namespace xsocket */

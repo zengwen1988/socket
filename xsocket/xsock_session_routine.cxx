@@ -514,6 +514,10 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 				rcved.data[4095] = '\0';
 				xlog::AppendV2((char *)rcved.data, __FILE__, __LINE__,
 					cli_fd, XLOG_LEVEL_V);
+				for (int j = 0; j < rcved_bytes; ++j) {
+					const uint8_t d = rcved.data[j];
+					rcved.cache_queue.enqueue(d);
+				}
 				os->onReceived(rcved);
 			}
 			/*
