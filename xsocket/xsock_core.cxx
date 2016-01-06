@@ -131,7 +131,7 @@ sock_fail:
  *   - Send start is: buf + start
  *   - NOTE: should use valid arguments
  */
-static uint8_t __send_data_unlocked = 1;
+/* static uint8_t __send_data_unlocked = 1; */
 ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
 	size_t _count)
 {
@@ -140,7 +140,7 @@ ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
 	ssize_t w;
 	ssize_t count = static_cast<ssize_t>(_count), fi = 0;
 
-	CAPTURE_LOCK(__send_data_unlocked);
+	/* CAPTURE_LOCK(__send_data_unlocked); */
 	while (count > wo) {
 #		if !defined(WIN32)
 		w = write(sockfd, data + start + (int)wo, count - wo);
@@ -163,7 +163,7 @@ ssize_t xsocket::core::SendData (int sockfd, const uint8_t * data, int start,
 	}
 	fi = wo;
 end:
-	RELEASE_LOCK(__send_data_unlocked);
+	/* RELEASE_LOCK(__send_data_unlocked); */
 	return fi;
 }
 
