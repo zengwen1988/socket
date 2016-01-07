@@ -463,7 +463,7 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 					*/
 				} else if ((ret < 0) && (EWOULDBLOCK == errnum)) {
 					xlog::AppendV2("EWOULDBLOCK: recv and will teminate",
-						__FILE__, __LINE__, 0, XLOG_LEVEL_W);
+						__FILE__, __LINE__, 0, XLOG_LEVEL_F);
 					didfi.code = -EWOULDBLOCK;
 					goto cc;
 				} else if (ret < 0) {
@@ -491,7 +491,7 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 			 */
 			if (prev_ok && (0 == rcved_bytes)) {
 				xlog::AppendV2("WARN: connection lost and will teminate",
-					__FILE__, __LINE__, cli_fd, XLOG_LEVEL_W);
+					__FILE__, __LINE__, cli_fd, XLOG_LEVEL_F);
 				didfi.code = 1;
 				goto cc;
 			}
@@ -540,7 +540,7 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 			}
 			if (tmi) {
 				xlog::AppendV2("user teminate", __FILE__, __LINE__, 0,
-					XLOG_LEVEL_I);
+					XLOG_LEVEL_0);
 				didfi.code = 0;
 				goto cc;
 			}
