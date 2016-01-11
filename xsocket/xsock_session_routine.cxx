@@ -318,6 +318,19 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 			goto cc;
 		}
 
+		{ /* Set SO_LINGER: after close not TIME_WAIT */
+		struct linger lg;
+		lg.l_onoff = 1;
+		lg.l_linger = 0;
+		int ret = setsockopt(cli_fd,
+			SOL_SOCKET,
+			SO_LINGER,
+			(const char *)(&lg),
+			sizeof(lg));
+		xlog::AppendV2("SO_LINGER", __FILE__, __LINE__, ret,
+			XLOG_LEVEL_0);
+		}
+
 		while (! tmi) {
 			/*
 			xlog::AppendV2("this run", __FILE__, __LINE__, cli_fd,
@@ -451,8 +464,28 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 #				if defined(WIN32)
 				if ((ret < 0) && (0 == errnum)) {
 					errnum = WSAGetLastError();
+					/*
 					xlog::AppendV2("WSAGetLastError", __FILE__, __LINE__,
 						errnum, XLOG_LEVEL_F);
+					*/
+					char s[64];
+					snprintf(s, 63, "%d. %s. %d",
+						errnum,
+						rcved.info.ip,
+						rcved.fd);
+					s[63] = '\0';
+					xlog::AppendV2(s, __FILE__, __LINE__, cli_fd,
+						XLOG_LEVEL_0);
+					if (10054 == errnum) {
+						int ret = xsocket::core::SendData(cli_fd,
+							(const uint8_t *)"10054",
+							0, 5);
+						if (ret > 0) {
+							errnum = EAGAIN;
+							xlog::AppendV2("CHG TO 10054", __FILE__, __LINE__,
+								cli_fd, XLOG_LEVEL_0);
+						}
+					}
 				}
 #				endif /* defined(WIN32) */
 
