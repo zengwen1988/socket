@@ -71,7 +71,7 @@ protected:
 public:
 	virtual int onConnect(const xsocket::SockOnConnnect&) = 0;
 	virtual int	didFinish(const xsocket::SockDidFinish&) = 0;
-	virtual int onReceived(const xsocket::SockRecved) = 0;
+	virtual int onReceived(xsocket::SockRecved&) = 0;
 	/* override true recv routine will exit */
 	virtual bool shouldTeminateRecv(int sockfd) = 0;
 

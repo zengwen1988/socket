@@ -450,7 +450,7 @@ void * xsocket::core::internal::ClientRecevier::run (void * arg)
 		bzero(buf, 4096);
 
 		ret = xsocket::core::RecvFromSockfd(
-			sockfd, buf, 0, 4000, 15 * 1e6, 15 * 1e6);
+			sockfd, buf, 0, 4096, 15 * 1e6, 15 * 1e6);
 
 		if ((ret < 0) && (ret > -1000)) {
 			xlog::AppendV2("FAIL: did finish", __FILE__, __LINE__, ret);
