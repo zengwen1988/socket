@@ -420,8 +420,11 @@ void * xsocket::core::internal::SockSessionRoutine::run (void * /* nil */)
 					if (ret < 0) {
 						ret = errno;
 						snprintf(msg, 127,
-							"FAIL: setsockopt: %s. and will teminate",
-							strerror(ret));
+							"FAIL: setsockopt: error: %s. "
+							"fd: %d. ip: %s",
+							strerror(ret),
+							cli_fd,
+							didfi.info.ip);
 						msg[127] = '\0';
 						xlog::AppendV2(msg, __FILE__, __LINE__, ret,
 							XLOG_LEVEL_F);
